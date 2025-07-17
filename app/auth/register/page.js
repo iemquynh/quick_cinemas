@@ -16,7 +16,8 @@ const GENRE_OPTIONS = [
   { value: "Sci-Fi", label: "Sci-Fi" },
   { value: "Thriller", label: "Thriller" },
   { value: "Animation", label: "Animation" },
-  { value: "Adventure", label: "Adventure" }
+  { value: "Adventure", label: "Adventure" },
+  { value: "Crime", label: "Crime" }
 ];
 
 const customStyles = {
@@ -109,6 +110,7 @@ export default function Register() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    console.log("Đã vào hàm handleRegister"); // Thêm dòng này
     if (form.favorite_genres.length === 0) {
       setError("Please select at least one favorite genre.");
       return;
@@ -126,7 +128,7 @@ export default function Register() {
         email: form.email,
         password_hash: hashedPassword,
         favorite_genres: form.favorite_genres,
-        role: false,
+        role: "user",
         created_at: new Date(),
         updated_at: new Date()
       };

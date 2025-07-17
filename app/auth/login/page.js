@@ -39,19 +39,26 @@ export default function SignIn() {
       
       // Lấy redirect URL từ query params
       const redirectUrl = searchParams.get('redirect');
-      
-      // Kiểm tra role và redirect
-      if (data.user.role && redirectUrl && redirectUrl.startsWith('/admin')) {
-        // Nếu là admin và có redirect URL admin → redirect về admin
-        router.push(redirectUrl);
+
+      // Chỉ cho phép admin/super_admin/theater_admin truy cập admin
+      const isAdmin = ['admin', 'super_admin', 'theater_admin'].includes(data.user.role);
+
+      if (redirectUrl && redirectUrl.startsWith('/admin')) {
+        if (isAdmin) {
+          router.push(redirectUrl);
+        } else {
+          // Nếu không phải admin, về trang chủ hoặc trang user
+          router.push('/');
+        }
       } else if (redirectUrl) {
-        // Nếu có redirect URL khác → redirect về đó
         router.push(redirectUrl);
-      } else if (data.user.role) {
-        // Nếu là admin và không có redirect URL → redirect về admin panel
-        router.push('/admin/movies');
+      } else if (data.user.role === 'super_admin') {
+        router.push('/admin/theater-admins');
+      } else if (data.user.role === 'theater_admin') {
+        router.push('/admin/dashboard');
+      } else if (data.user.role === 'admin') {
+        router.push('/admin');
       } else {
-        // Nếu là user thường → redirect về trang chủ
         router.push('/');
       }
     } catch (error) {

@@ -1,11 +1,9 @@
 import mongoose from 'mongoose'
 
 const CommentSchema = new mongoose.Schema({
-    user_id: String,
-    movie_id: String,
-    rating: Number,
-    comment: String,
-    created_at: Date,
+    user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    movie_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Movie', required: true },
+    content: { type: String }, 
 }, {
     timestamps: true
 })

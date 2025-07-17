@@ -41,6 +41,7 @@ export async function GET(request) {
         username: user.username,
         email: user.email,
         role: user.role,
+        theater_id: user.theater_id,
         favorite_genres: user.favorite_genres
       }
     });

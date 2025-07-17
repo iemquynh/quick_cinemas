@@ -1,8 +1,30 @@
 "use client";
 import Header from '../components/Header'
 import Footer from '@/components/Footer';
+import SiteFooter from '../components/SiteFooter';
+import { useEffect, useState } from "react";
+import Link from "next/link";
 
 export default function Home() {
+  const [movies, setMovies] = useState([]);
+
+  useEffect(() => {
+    fetch('/api/movies')
+      .then(res => res.json())
+      .then(data => {
+        console.log('Dữ liệu phim:', data);
+        // Xử lý data ở đây
+        if (Array.isArray(data)) {
+          setMovies(data);
+        } else if (Array.isArray(data.movies)) {
+          setMovies(data.movies);
+        } else {
+          setMovies([]);
+        }
+      })
+      .catch(err => console.error('Lỗi lấy phim:', err));
+  }, []);
+
   return (
     <>
       <div className="min-h-full">
@@ -56,76 +78,27 @@ export default function Home() {
               <div className="w-24 h-1 bg-[#4fd1ff] mt-2 rounded"></div>
             </div>
             <div className="flex flex-wrap justify-center gap-8">
-              {/* Film Card 1 */}
-              <div className="relative w-48">
-                <img
-                  src="https://innovavietnam.vn/wp-content/uploads/poster-561x800.jpg"
-                  alt="Final Destination: Bloodlines"
-                  className="rounded-lg w-full aspect-[2/3] object-cover shadow-lg"
-                />
-                {/* Play icon */}
-                <button className="absolute top-2 left-2 bg-blue-500 rounded-tr-lg rounded-bl-lg p-1">
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="white"><polygon points="5,3 17,10 5,17"/></svg>
-                </button>
-                {/* Bookmark icon */}
-                <button className="absolute top-2 right-2 bg-white/80 rounded p-1">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#222" strokeWidth="2"><path d="M6 4v16l6-5.333L18 20V4z"/></svg>
-                </button>
-                <div className="mt-3 text-white font-extrabold text-lg text-center tracking-wide leading-tight">
-                  MẮT BIẾC
-                </div>
-              </div>
-              {/* Film Card 2 */}
-              <div className="relative w-48">
-                <img
-                  src="https://cdn2.tuoitre.vn/thumb_w/480/2022/12/3/nbnteaser-posterfb-16700503265491078250905.jpg"
-                  alt="Mission: Impossible - The Final Reckoning"
-                  className="rounded-lg w-full aspect-[2/3] object-cover shadow-lg"
-                />
-                <button className="absolute top-2 left-2 bg-blue-500 rounded-tr-lg rounded-bl-lg p-1">
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="white"><polygon points="5,3 17,10 5,17"/></svg>
-                </button>
-                <button className="absolute top-2 right-2 bg-white/80 rounded p-1">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#222" strokeWidth="2"><path d="M6 4v16l6-5.333L18 20V4z"/></svg>
-                </button>
-                <div className="mt-3 text-white font-extrabold text-lg text-center tracking-wide leading-tight">
-                  NHÀ BÀ NỮ
-                </div>
-              </div>
-              {/* Film Card 3 */}
-              <div className="relative w-48">
-                <img
-                  src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQgU1PULkVO7OcB4tLhyhMfUT52IXOGYDVNDw&s"
-                  alt="Thunderbolts"
-                  className="rounded-lg w-full aspect-[2/3] object-cover shadow-lg"
-                />
-                <button className="absolute top-2 left-2 bg-blue-500 rounded-tr-lg rounded-bl-lg p-1">
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="white"><polygon points="5,3 17,10 5,17"/></svg>
-                </button>
-                <button className="absolute top-2 right-2 bg-white/80 rounded p-1">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#222" strokeWidth="2"><path d="M6 4v16l6-5.333L18 20V4z"/></svg>
-                </button>
-                <div className="mt-3 text-white font-extrabold text-lg text-center tracking-wide leading-tight">
-                  BỐ GIÀ
-                </div>
-              </div>
-              {/* Film Card 4 */}
-              <div className="relative w-48">
-                <img
-                  src="https://vntravel.org.vn/uploads/images/2024/02/20/poster-mai-scaled-1708403724.jpg"
-                  alt="Lilo & Stitch"
-                  className="rounded-lg w-full aspect-[2/3] object-cover shadow-lg"
-                />
-                <button className="absolute top-2 left-2 bg-blue-500 rounded-tr-lg rounded-bl-lg p-1">
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="white"><polygon points="5,3 17,10 5,17"/></svg>
-                </button>
-                <button className="absolute top-2 right-2 bg-white/80 rounded p-1">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#222" strokeWidth="2"><path d="M6 4v16l6-5.333L18 20V4z"/></svg>
-                </button>
-                <div className="mt-3 text-white font-extrabold text-lg text-center tracking-wide leading-tight">
-                  MAI
-                </div>
-              </div>
+              {movies.length === 0 ? (
+                <div className="text-white">Đang tải phim...</div>
+              ) : (
+                movies.map((movie) => (
+                  <Link
+                    key={movie._id}
+                    href={`/movies/${movie._id}`}
+                    className="relative w-48 cursor-pointer group"
+                    title={movie.title}
+                  >
+                    <img
+                      src={movie.poster || 'https://via.placeholder.com/200x300?text=No+Image'}
+                      alt={movie.title}
+                      className="rounded-lg w-full aspect-[2/3] object-cover shadow-lg group-hover:scale-105 transition-transform"
+                    />
+                    <div className="mt-3 text-white font-extrabold text-lg text-center tracking-wide leading-tight">
+                      {movie.title}
+                    </div>
+                  </Link>
+                ))
+              )}
             </div>
           </div>
 
@@ -289,50 +262,11 @@ export default function Home() {
                 See more of our Offers &amp; Competitions
               </button>
             </div>
-
-            <div className="bg-[#07162a] text-white pt-8 pb-4 border-t border-[#0a1a2f]" style={{marginBottom: 30}}>
-              <div className="flex justify-center">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-16 text-sm ">
-                  <div>
-                    <ul className="space-y-1 ">
-                      <li><a href='#' className='transition-colors hover:text-[#d1d5db]'>Cookie Policy</a></li>
-                      <li><a href='#'className='transition-colors hover:text-[#d1d5db]'>Privacy and Legal</a></li>
-                      <li><a href='#' className='transition-colors hover:text-[#d1d5db]'>Corporate Responsibility</a></li>
-                      <li><a href='#' className='transition-colors hover:text-[#d1d5db]'>Modern Slavery Statement</a></li>
-                    </ul>
-                  </div>
-                  <div>
-                    <ul className="space-y-1">
-                      <li><a href='#' className='transition-colors hover:text-[#d1d5db]'>Contact Us</a></li>
-                      <li><a href='#' className='transition-colors hover:text-[#d1d5db]'>Help</a></li>
-                      <li><a href='#' className='transition-colors hover:text-[#d1d5db]'>Accessibility</a></li>
-                      <li><a href='#' className='transition-colors hover:text-[#d1d5db]'>Allergens</a></li>
-                    </ul>
-                  </div>
-                  <div>
-                    <ul className="space-y-1">
-                      <li><a href='#' className='transition-colors hover:text-[#d1d5db]'>About us</a></li>
-                      <li><a href='#' className='transition-colors hover:text-[#d1d5db]'>Careers</a></li>
-                      <li><a href='#' className='transition-colors hover:text-[#d1d5db]'>Corporate Events</a></li>
-                      <li><a href='#' className='transition-colors hover:text-[#d1d5db]'>ODEON Scene</a></li>
-                    </ul>
-                  </div>
-                  <div>
-                    <ul className="space-y-1">
-                      <li><a href='#' className='transition-colors hover:text-[#d1d5db]'>iOS App</a></li>
-                      <li><a href='#' className='transition-colors hover:text-[#d1d5db]'>Android App</a></li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-              <div className="border-t border-[#0a1a2f] mt-6 pt-4 text-center text-xs text-gray-300 mb-8 md:mb-2">
-                © QUICK Cinemas Limited 2025 to 2030. All rights reserved
-              </div>
-            </div>
           </div>
-
+          <SiteFooter marginBottom={50}/>
         </main>
-
+            
+        
         <Footer />
       </div>
     </>

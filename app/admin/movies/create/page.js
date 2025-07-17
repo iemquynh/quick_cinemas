@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createMovie } from '../../../../utils/movieApi';
 import AdminGuard from '../../../../components/AdminGuard';
+import Select from 'react-select';
 
 export default function CreateMoviePage() {
   const router = useRouter();
@@ -23,6 +24,68 @@ export default function CreateMoviePage() {
     isActive: true
   });
 
+  const [runtimeHour, setRuntimeHour] = useState('');
+  const [runtimeMinute, setRuntimeMinute] = useState('');
+  const [genreOptions, setGenreOptions] = useState([]);
+
+  const GENRE_OPTIONS = [
+    { value: "Action", label: "Action" },
+    { value: "Comedy", label: "Comedy" },
+    { value: "Drama", label: "Drama" },
+    { value: "Horror", label: "Horror" },
+    { value: "Romance", label: "Romance" },
+    { value: "Sci-Fi", label: "Sci-Fi" },
+    { value: "Thriller", label: "Thriller" },
+    { value: "Animation", label: "Animation" },
+    { value: "Adventure", label: "Adventure" },
+    { value: "Crime", label: "Crime" },
+  ];
+
+  const customSelectStyles = {
+    control: (provided, state) => ({
+      ...provided,
+      backgroundColor: '#374151', // bg-gray-700
+      borderColor: state.isFocused ? '#2563eb' : '#4b5563', // focus: blue-600, default: gray-600
+      color: '#fff',
+      minHeight: 48,
+      boxShadow: 'none',
+    }),
+    menu: (provided) => ({
+      ...provided,
+      backgroundColor: '#374151',
+      color: '#fff',
+      zIndex: 20,
+    }),
+    option: (provided, state) => ({
+      ...provided,
+      backgroundColor: state.isSelected
+        ? '#2563eb' // blue-600
+        : state.isFocused
+        ? '#1e293b' // gray-800
+        : '#374151', // gray-700
+      color: '#fff',
+      fontWeight: state.isSelected ? 'bold' : 'normal',
+      cursor: 'pointer',
+    }),
+    multiValue: (provided) => ({
+      ...provided,
+      backgroundColor: '#2563eb',
+      color: '#fff',
+    }),
+    multiValueLabel: (provided) => ({
+      ...provided,
+      color: '#fff',
+    }),
+    placeholder: (provided) => ({
+      ...provided,
+      color: '#d1d5db', // gray-300
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      color: '#fff',
+    }),
+  };
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
@@ -31,12 +94,21 @@ export default function CreateMoviePage() {
     }));
   };
 
+  const handleGenreChange = (selected) => {
+    setGenreOptions(selected);
+    setFormData(prev => ({
+      ...prev,
+      genre: selected.map(opt => opt.value).join(', ')
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
+    // Ghép runtime
+    const runtime = `${runtimeHour ? runtimeHour + 'h ' : ''}${runtimeMinute ? runtimeMinute + 'm' : ''}`.trim();
     try {
-      const response = await createMovie(formData);
+      const response = await createMovie({ ...formData, runtime });
       if (response.success) {
         alert('Movie created successfully!');
         router.push('/admin/movies');
@@ -52,7 +124,7 @@ export default function CreateMoviePage() {
 
   return (
     <AdminGuard>
-      <div className="min-h-screen bg-gray-900 py-8">
+      <div className="min-h-screen bg-gray-900 py-8" style={{marginTop: 55}}>
         <div className="container mx-auto px-4 max-w-4xl">
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-4xl font-bold text-white">Create New Movie</h1>
@@ -136,28 +208,39 @@ export default function CreateMoviePage() {
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   Runtime *
                 </label>
-                <input
-                  type="text"
-                  name="runtime"
-                  value={formData.runtime}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
-                  placeholder="e.g., 2h 15m"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    min="0"
+                    name="runtimeHour"
+                    value={runtimeHour}
+                    onChange={e => setRuntimeHour(e.target.value)}
+                    className="w-20 px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+                    placeholder="Hours"
+                  />
+                  <input
+                    type="number"
+                    min="0"
+                    max="59"
+                    name="runtimeMinute"
+                    value={runtimeMinute}
+                    onChange={e => setRuntimeMinute(e.target.value)}
+                    className="w-20 px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+                    placeholder="Minutes"
+                  />
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   Release Date *
                 </label>
                 <input
-                  type="text"
+                  type="date"
                   name="releaseDate"
                   value={formData.releaseDate}
                   onChange={handleChange}
                   required
                   className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
-                  placeholder="e.g., 15 December 2024"
                 />
               </div>
             </div>
@@ -168,14 +251,16 @@ export default function CreateMoviePage() {
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   Genre *
                 </label>
-                <input
-                  type="text"
+                <Select
+                  isMulti
                   name="genre"
-                  value={formData.genre}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
-                  placeholder="e.g., Action, Drama"
+                  options={GENRE_OPTIONS}
+                  value={genreOptions}
+                  onChange={handleGenreChange}
+                  classNamePrefix="react-select"
+                  className="text-black"
+                  placeholder="Select genres..."
+                  styles={customSelectStyles}
                 />
               </div>
               <div>

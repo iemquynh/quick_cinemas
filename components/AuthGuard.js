@@ -75,7 +75,7 @@ export default function AuthGuard({ children }) {
             </div>
             <div className="flex items-center space-x-4">
               <a 
-                href="/"
+                href={user?.role === 'super_admin' ? '/admin/theater-admins' : '/'}
                 className="text-gray-300 hover:text-white text-sm"
               >
                 Home

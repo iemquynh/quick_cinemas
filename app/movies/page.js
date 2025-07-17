@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
+
 export default function MoviesPage() {
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);

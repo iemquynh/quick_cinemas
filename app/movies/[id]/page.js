@@ -1,13 +1,13 @@
 import MovieDetailClient from '../../../components/MovieDetailClient.js';
-import Header from '../../../components/Header.js';
+import { AdminProvider } from '@/hooks/useCurrentUser';
 
 export default async function MoviePage({ params }) {
-  const movieId = params.id;
+  const awaitedParams = await params;
+  const movieId = awaitedParams.id;
 
   // Gọi API để lấy dữ liệu phim
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
   const res = await fetch(`${baseUrl}/api/movies/${movieId}`, { cache: 'no-store' });
-
   const result = await res.json();
 
   // Nếu không tìm thấy phim hoặc lỗi
@@ -28,14 +28,57 @@ export default async function MoviePage({ params }) {
     );
   }
 
-  // Trả về giao diện chi tiết phim
+  // Lấy danh sách phim liên quan trực tiếp từ DB
+  // (Chỉ chạy được trên server, cần import Movie model và connectToDatabase)
+  const Movie = (await import('../../../models/Movie')).default;
+  const { connectToDatabase } = await import('../../../lib/mongodb');
+  await connectToDatabase();
+  const mongoose = (await import('mongoose')).default;
+  const genres = result.data.genre.split(',').map(g => g.trim());
+  const relatedMovies = await Movie.aggregate([
+    { $match: { _id: { $ne: new mongoose.Types.ObjectId(movieId) } } },
+    { $addFields: {
+        genreArray: { $map: { input: { $split: ["$genre", ","] }, as: "g", in: { $trim: { input: "$$g" } } } }
+      }
+    },
+    { $addFields: {
+        matchCount: {
+          $size: {
+            $setIntersection: [
+              genres,
+              "$genreArray"
+            ]
+          }
+        }
+      }
+    },
+    { $match: { matchCount: { $gt: 0 } } },
+    { $sort: { matchCount: -1 } },
+    { $limit: 4 }
+  ]);
+  console.log('relatedMovies count:', relatedMovies.length);
+  console.log('relatedMovies titles:', relatedMovies.map(m => m.title));
+  console.log('Current movieId:', movieId);
+  console.log('relatedMovies ids:', relatedMovies.map(m => m._id));
+
+  function serializeMovie(m) {
+    return {
+      ...m,
+      _id: m._id?.toString ? m._id.toString() : m._id,
+      createdAt: m.createdAt?.toISOString ? m.createdAt.toISOString() : m.createdAt,
+      updatedAt: m.updatedAt?.toISOString ? m.updatedAt.toISOString() : m.updatedAt,
+    };
+  }
+  const relatedMoviesSerialized = relatedMovies.map(serializeMovie);
+
+  // Bọc MovieDetailClient trong AdminProvider
   return (
-    <>
-      <Header />
+    <AdminProvider>
       <MovieDetailClient
         movieData={result.data}
         movieId={movieId}
+        relatedMovies={relatedMoviesSerialized}
       />
-    </>
+    </AdminProvider>
   );
 }

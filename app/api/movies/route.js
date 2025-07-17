@@ -7,11 +7,7 @@ export async function GET() {
   try {
     await connectToDatabase();
     const movies = await Movie.find({}).sort({ createdAt: -1 });
-    
-    return NextResponse.json({
-      success: true,
-      data: movies
-    });
+    return NextResponse.json(movies);
   } catch (error) {
     console.error('Error fetching movies:', error);
     return NextResponse.json(

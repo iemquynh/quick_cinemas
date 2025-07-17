@@ -2,7 +2,12 @@ import mongoose from 'mongoose'
 
 const showtimeSchema = new mongoose.Schema({
     movie_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Movie' },
-    theater_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Theater' },
+    theater_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Theater', required: true },
+    theater_chain: { 
+        type: String, 
+        enum: ['CGV', 'Lotte Cinema', 'Galaxy Cinema', 'BHD Star Cineplex', 'Beta Cinemas'],
+        required: true
+    },
     room: String,
     time: Date,
     type: String,

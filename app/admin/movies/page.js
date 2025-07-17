@@ -4,21 +4,32 @@ import { useState, useEffect } from 'react';
 import { getAllMovies, deleteMovie } from '../../../utils/movieApi';
 import AdminGuard from '../../../components/AdminGuard';
 import Link from 'next/link';
+import { useAdmin } from '@/hooks/useCurrentUser';
 
 export default function AdminMoviesPage() {
+  const { user, adminLoading } = useAdmin();
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  // Bỏ lọc filteredMovieIds, filteredMovies
 
   useEffect(() => {
     fetchMovies();
   }, []);
 
+  useEffect(() => {
+    if (user && user.role === 'theater_admin') {
+      fetchShowtimesAndFilterMovies();
+    }
+  }, [user, movies]);
+
   const fetchMovies = async () => {
     try {
       setLoading(true);
       const response = await getAllMovies();
-      if (response.success) {
+      if (Array.isArray(response)) {
+        setMovies(response);
+      } else if (response.success && Array.isArray(response.data)) {
         setMovies(response.data);
       } else {
         setError(response.message);
@@ -27,6 +38,27 @@ export default function AdminMoviesPage() {
       setError('Failed to fetch movies');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Lọc movie theo showtime liên quan đến theater admin
+  const fetchShowtimesAndFilterMovies = async () => {
+    try {
+      const token = localStorage.getItem('auth-token');
+      const showtimesRes = await fetch('/api/showtimes', { headers: { Authorization: `Bearer ${token}` } });
+      const showtimesData = await showtimesRes.json();
+      const adminChain = (user?.theater_chain || '').split(' ')[0]?.toLowerCase();
+      const filteredShowtimes = Array.isArray(showtimesData)
+        ? showtimesData.filter(st => {
+            const theaterName = st.theater_id?.name || '';
+            const theaterChain = theaterName.split(' ')[0]?.toLowerCase();
+            return theaterChain === adminChain;
+          })
+        : [];
+      const movieIds = new Set(filteredShowtimes.map(st => st.movie_id?._id || st.movie_id));
+      // setFilteredMovieIds(movieIds); // Bỏ lọc filteredMovieIds
+    } catch (error) {
+      // setFilteredMovieIds(new Set()); // Bỏ lọc filteredMovieIds
     }
   };
 
@@ -46,20 +78,11 @@ export default function AdminMoviesPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-white text-xl">Loading...</div>
-      </div>
-    );
+  if (adminLoading) {
+    return null;
   }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-red-400 text-xl">{error}</div>
-      </div>
-    );
+  if (!user || (user.role !== 'theater_admin' && user.role !== 'super_admin')) {
+    return null;
   }
 
   return (
@@ -68,26 +91,16 @@ export default function AdminMoviesPage() {
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-4xl font-bold text-white">Movie Management</h1>
-            <div className="flex gap-3">
-              <Link
-                href="/admin/movies/create"
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
-              >
-                Add New Movie
-              </Link>
-              <Link
-                href="/admin/theaters"
-                className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
-              >
-                Theaters
-              </Link>
-              <Link
-                href="/admin/schedules"
-                className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
-              >
-                Schedules
-              </Link>
-            </div>
+            {user.role === 'super_admin' && (
+              <div className="flex gap-3">
+                <Link
+                  href="/admin/movies/create"
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                >
+                  Add New Movie
+                </Link>
+              </div>
+            )}
           </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -118,27 +131,38 @@ export default function AdminMoviesPage() {
                   <span>{movie.runtime}</span>
                 </div>
                 <p className="text-sm text-gray-500 mb-4">{movie.releaseDate}</p>
-                
-                <div className="flex space-x-2">
-                  <a 
-                    href={`/admin/movies/edit/${movie._id}`}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-center py-2 px-3 rounded text-sm font-medium transition-colors"
-                  >
-                    Edit
-                  </a>
-                  <button
-                    onClick={() => handleDelete(movie._id)}
-                    className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded text-sm font-medium transition-colors"
-                  >
-                    Delete
-                  </button>
-                  <a 
-                    href={`/movies/${movie._id}`}
-                    className="flex-1 bg-green-600 hover:bg-green-700 text-white text-center py-2 px-3 rounded text-sm font-medium transition-colors"
-                  >
-                    View
-                  </a>
-                </div>
+                {user.role === 'super_admin' && (
+                  <div className="flex space-x-2">
+                    <Link 
+                      href={`/admin/movies/edit/${movie._id}`}
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-center py-2 px-3 rounded text-sm font-medium transition-colors"
+                    >
+                      Edit
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(movie._id)}
+                      className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded text-sm font-medium transition-colors"
+                    >
+                      Delete
+                    </button>
+                    <Link 
+                      href={`/movies/${movie._id}`}
+                      className="flex-1 bg-green-600 hover:bg-green-700 text-white text-center py-2 px-3 rounded text-sm font-medium transition-colors"
+                    >
+                      View
+                    </Link>
+                  </div>
+                )}
+                {user.role === 'theater_admin' && (
+                  <div className="flex space-x-2">
+                    <Link 
+                      href={`/movies/${movie._id}`}
+                      className="flex-1 bg-green-600 hover:bg-green-700 text-white text-center py-2 px-3 rounded text-sm font-medium transition-colors"
+                    >
+                      View
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
           ))}

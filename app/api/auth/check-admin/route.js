@@ -31,8 +31,8 @@ export async function GET(request) {
       );
     }
 
-    // Kiểm tra role admin - role phải là true để là admin
-    if (!user.role || user.role !== true) {
+    // Kiểm tra role admin - phải là super_admin hoặc theater_admin
+    if (!user.role || (user.role !== 'super_admin' && user.role !== 'theater_admin')) {
       return NextResponse.json(
         { success: false, message: 'Access denied. Admin role required.' },
         { status: 403 }
@@ -46,7 +46,8 @@ export async function GET(request) {
         id: user._id,
         username: user.username,
         email: user.email,
-        role: user.role
+        role: user.role,
+        theater_chain: user.theater_chain // Thêm dòng này để client nhận được theater_chain
       }
     });
     

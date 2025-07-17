@@ -2,10 +2,12 @@
 import { useEffect, useState } from 'react';
 import AdminGuard from '@/components/AdminGuard';
 import { FaEdit, FaTrash, FaSave, FaTimes } from 'react-icons/fa';
+import { useAdmin } from '@/hooks/useCurrentUser';
 
 const SCREEN_TYPE_OPTIONS = ['2D', '3D', 'IMAX', '4DX', 'ScreenX'];
 
 export default function TheaterListPage() {
+  const { user } = useAdmin();
   const [theaters, setTheaters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -99,7 +101,13 @@ export default function TheaterListPage() {
               </tr>
             </thead>
             <tbody>
-              {theaters.map(theater => (
+              {theaters
+                .filter(theater => {
+                  if (!user?.theater_chain) return true;
+                  const getFirstWord = str => str?.trim().split(' ')[0]?.toLowerCase() || '';
+                  return getFirstWord(user.theater_chain) === getFirstWord(theater.name);
+                })
+                .map(theater => (
                 <tr key={theater._id}>
                   <td>
                     {editId === theater._id ? (

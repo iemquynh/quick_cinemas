@@ -2,11 +2,13 @@
 import AdminGuard from '@/components/AdminGuard';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAdmin } from '@/hooks/useCurrentUser';
 
 const SCREEN_TYPE_OPTIONS = ['2D', '3D', 'IMAX', '4DX', 'ScreenX'];
 
 export default function CreateTheaterPage() {
   const router = useRouter();
+  const { user } = useAdmin();
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
   const [rooms, setRooms] = useState(1);
@@ -21,11 +23,20 @@ export default function CreateTheaterPage() {
   async function handleSubmit(e) {
     e.preventDefault();
     setMessage('');
+    // Kiểm tra ký tự đầu tiên
+    if (user?.theater_chain) {
+      const userChainFirst = user.theater_chain.trim()[0]?.toLowerCase();
+      const nameFirst = name.trim()[0]?.toLowerCase();
+      if (userChainFirst !== nameFirst) {
+        setMessage("Tên rạp phải bắt đầu bằng ký tự đầu tiên của chuỗi rạp bạn quản lý (" + user.theater_chain + "). Vui lòng nhập lại cho đúng!");
+        return;
+      }
+    }
     try {
       const res = await fetch('/api/theaters', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, address, rooms, screenTypes }),
+        body: JSON.stringify({ name, address, rooms, screenTypes, theater_chain: user?.theater_chain }),
       });
       if (res.ok) {
         router.push('/admin/theaters');
@@ -40,7 +51,7 @@ export default function CreateTheaterPage() {
 
   return (
     <AdminGuard>
-      <div className="flex items-center justify-center min-h-[calc(100vh-64px)]"> {/* 64px là chiều cao navbar */}
+      <div className="flex items-center justify-center min-h-[calc(100vh-64px)] pt-10"> {/* 64px là chiều cao navbar */}
         <div className="w-full max-w-md bg-base-200 p-6 rounded shadow-lg">
           <h2 className="text-xl font-bold mb-4 text-center">Create a theater</h2>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">

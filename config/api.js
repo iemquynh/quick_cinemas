@@ -2,8 +2,8 @@
 export const API_BASE_URL = '';
 export const API_ENDPOINTS = {
   USERS: {
-    BASE: '/users',
-    BY_ID: (id) => `/users/${id}`,
+    BASE: '/api/users',
+    BY_ID: (id) => `/api/users/${id}`,
   },
   MOVIES: {
     BASE: '/movies',

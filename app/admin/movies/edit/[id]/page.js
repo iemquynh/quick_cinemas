@@ -4,6 +4,7 @@ import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { getMovieById, updateMovie } from '../../../../../utils/movieApi';
 import AdminGuard from '../../../../../components/AdminGuard';
+import Select from 'react-select';
 
 export default function EditMoviePage({ params }) {
   const router = useRouter();
@@ -25,6 +26,66 @@ export default function EditMoviePage({ params }) {
     trailerUrl: '',
     isActive: true
   });
+  const [runtimeHour, setRuntimeHour] = useState('');
+  const [runtimeMinute, setRuntimeMinute] = useState('');
+  const [genreOptions, setGenreOptions] = useState([]);
+
+  const GENRE_OPTIONS = [
+    { value: "Action", label: "Action" },
+    { value: "Comedy", label: "Comedy" },
+    { value: "Drama", label: "Drama" },
+    { value: "Horror", label: "Horror" },
+    { value: "Romance", label: "Romance" },
+    { value: "Sci-Fi", label: "Sci-Fi" },
+    { value: "Thriller", label: "Thriller" },
+    { value: "Animation", label: "Animation" },
+    { value: "Adventure", label: "Adventure" }
+  ];
+
+  const customSelectStyles = {
+    control: (provided, state) => ({
+      ...provided,
+      backgroundColor: '#374151',
+      borderColor: state.isFocused ? '#2563eb' : '#4b5563',
+      color: '#fff',
+      minHeight: 48,
+      boxShadow: 'none',
+    }),
+    menu: (provided) => ({
+      ...provided,
+      backgroundColor: '#374151',
+      color: '#fff',
+      zIndex: 20,
+    }),
+    option: (provided, state) => ({
+      ...provided,
+      backgroundColor: state.isSelected
+        ? '#2563eb'
+        : state.isFocused
+        ? '#1e293b'
+        : '#374151',
+      color: '#fff',
+      fontWeight: state.isSelected ? 'bold' : 'normal',
+      cursor: 'pointer',
+    }),
+    multiValue: (provided) => ({
+      ...provided,
+      backgroundColor: '#2563eb',
+      color: '#fff',
+    }),
+    multiValueLabel: (provided) => ({
+      ...provided,
+      color: '#fff',
+    }),
+    placeholder: (provided) => ({
+      ...provided,
+      color: '#d1d5db',
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      color: '#fff',
+    }),
+  };
 
   useEffect(() => {
     fetchMovie();
@@ -35,7 +96,38 @@ export default function EditMoviePage({ params }) {
       setLoading(true);
       const response = await getMovieById(unwrappedParams.id);
       if (response.success) {
-        setFormData(response.data);
+        const data = response.data;
+        // Parse runtime
+        let hour = '', minute = '';
+        if (data.runtime) {
+          const match = data.runtime.match(/(\d+)h\s*(\d+)?m?/);
+          if (match) {
+            hour = match[1] || '';
+            minute = match[2] || '';
+          }
+        }
+        setRuntimeHour(hour);
+        setRuntimeMinute(minute);
+        // Parse releaseDate to yyyy-mm-dd
+        let releaseDate = '';
+        if (data.releaseDate) {
+          const d = new Date(data.releaseDate);
+          if (!isNaN(d)) {
+            releaseDate = d.toISOString().slice(0, 10);
+          } else if (/\d{4}-\d{2}-\d{2}/.test(data.releaseDate)) {
+            releaseDate = data.releaseDate;
+          }
+        }
+        // Parse genre to array
+        let genreArr = [];
+        if (data.genre) {
+          genreArr = data.genre.split(',').map(g => g.trim()).filter(Boolean).map(g => GENRE_OPTIONS.find(opt => opt.value === g) || { value: g, label: g });
+        }
+        setGenreOptions(genreArr);
+        setFormData({
+          ...data,
+          releaseDate: releaseDate,
+        });
       } else {
         setError(response.message || 'Failed to fetch movie');
       }
@@ -54,12 +146,28 @@ export default function EditMoviePage({ params }) {
     }));
   };
 
+  const handleGenreChange = (selected) => {
+    setGenreOptions(selected);
+    setFormData(prev => ({
+      ...prev,
+      genre: selected.map(opt => opt.value).join(', ')
+    }));
+  };
+
+  const handleReleaseDateChange = (e) => {
+    setFormData(prev => ({
+      ...prev,
+      releaseDate: e.target.value
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
-
+    // Ghép runtime
+    const runtime = `${runtimeHour ? runtimeHour + 'h ' : ''}${runtimeMinute ? runtimeMinute + 'm' : ''}`.trim();
     try {
-      const response = await updateMovie(unwrappedParams.id, formData);
+      const response = await updateMovie(unwrappedParams.id, { ...formData, runtime });
       if (response.success) {
         alert('Movie updated successfully!');
         router.push('/admin/movies');
@@ -83,7 +191,7 @@ export default function EditMoviePage({ params }) {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center" >
         <div className="text-center">
           <div className="text-red-400 text-xl mb-4">{error}</div>
           <a 
@@ -99,10 +207,10 @@ export default function EditMoviePage({ params }) {
 
   return (
     <AdminGuard>
-      <div className="min-h-screen bg-gray-900 py-8">
+      <div className="min-h-screen bg-gray-900 py-8" style={{marginTop: 55}}>
         <div className="container mx-auto px-4 max-w-4xl">
           <div className="flex justify-between items-center mb-8">
-            <h1 className="text-1xl font-bold text-white">Edit Movie</h1>
+            <h1 className="text-1x1 font-bold text-white">Edit Movie</h1>
             <a 
               href="/admin/movies"
               className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
@@ -183,46 +291,58 @@ export default function EditMoviePage({ params }) {
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   Runtime *
                 </label>
-                <input
-                  type="text"
-                  name="runtime"
-                  value={formData.runtime}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
-                  placeholder="e.g., 2h 15m"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    min="0"
+                    name="runtimeHour"
+                    value={runtimeHour}
+                    onChange={e => setRuntimeHour(e.target.value)}
+                    className="w-20 px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+                    placeholder="Hours"
+                  />
+                  <input
+                    type="number"
+                    min="0"
+                    max="59"
+                    name="runtimeMinute"
+                    value={runtimeMinute}
+                    onChange={e => setRuntimeMinute(e.target.value)}
+                    className="w-20 px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+                    placeholder="Minutes"
+                  />
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   Release Date *
                 </label>
                 <input
-                  type="text"
+                  type="date"
                   name="releaseDate"
                   value={formData.releaseDate}
-                  onChange={handleChange}
+                  onChange={handleReleaseDateChange}
                   required
                   className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
-                  placeholder="e.g., 15 December 2024"
                 />
               </div>
             </div>
-
             {/* Genre and Tags */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   Genre *
                 </label>
-                <input
-                  type="text"
+                <Select
+                  isMulti
                   name="genre"
-                  value={formData.genre}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
-                  placeholder="e.g., Action, Drama"
+                  options={GENRE_OPTIONS}
+                  value={genreOptions}
+                  onChange={handleGenreChange}
+                  classNamePrefix="react-select"
+                  className="text-black"
+                  placeholder="Select genres..."
+                  styles={customSelectStyles}
                 />
               </div>
               <div>

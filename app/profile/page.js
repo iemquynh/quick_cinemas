@@ -110,10 +110,10 @@ export default function ProfilePage() {
                     <input type="email" name="email" className="w-full rounded px-3 py-2" value={form.email || ''} onChange={handleChange} />
                   </div>
                 </div>
-                <div>
+                {/* <div>
                   <h2 className="text-2xl font-bold text-white mb-6">Favorite Genres</h2>
                   <input type="text" name="favorite_genres" className="w-full rounded px-3 py-2" value={form.favorite_genres ? form.favorite_genres.join(', ') : ''} onChange={e => setForm({ ...form, favorite_genres: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} placeholder="Genre1, Genre2, ..." />
-                </div>
+                </div> */}
               </div>
               <div className="flex space-x-4 mt-8">
                 <button className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-lg" onClick={() => { setEditMode(false); setForm(user); setError(''); }}>Cancel</button>
@@ -141,7 +141,13 @@ export default function ProfilePage() {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-300 mb-2">Role</label>
-                        <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${user.role === true ? 'bg-blue-500 text-white' : 'bg-gray-500 text-white'}`}>{user.role === true ? 'Admin' : 'User'}</span>
+                        <span className="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-blue-500 text-white">
+                          {user.role === 'super_admin'
+                            ? 'Super Admin'
+                            : user.role === 'theater_admin'
+                              ? 'Theater Admin'
+                              : 'User'}
+                        </span>
                       </div>
                     </div>
                   </div>

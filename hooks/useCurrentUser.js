@@ -32,6 +32,27 @@ export function AdminProvider({ children }) {
         setUser(data.user);
         setLoading(false);
         setHasChecked(true);
+        
+        // Redirect theo role
+        const currentPath = window.location.pathname;
+        if (window.location.pathname.startsWith('/admin')) {
+          if (data.user.role === 'super_admin') {
+            // Chỉ cho phép super_admin truy cập /admin/theater-admins và /admin/movies
+            if (
+              currentPath !== '/admin/theater-admins' &&
+              !currentPath.startsWith('/admin/theater-admins') &&
+              currentPath !== '/admin/movies' &&
+              !currentPath.startsWith('/admin/movies')
+            ) {
+              router.push('/admin/theater-admins');
+            }
+          } else if (data.user.role === 'theater_admin') {
+            // Theater admin nên ở trang quản lý theater
+            if (currentPath === '/admin' || currentPath.startsWith('/admin/theater-admins')) {
+              router.push('/admin/theater');
+            }
+          }
+        }
       } else {
         setIsAdmin(false);
         setUser(null);
@@ -56,9 +77,23 @@ export function AdminProvider({ children }) {
   const logout = () => {
     // Xóa localStorage và sessionStorage
     if (typeof window !== 'undefined') {
+      let role = null;
+      if (user && user.role) {
+        role = user.role;
+      } else {
+        let userData = null;
+        try {
+          userData = JSON.parse(localStorage.getItem('user'));
+        } catch {}
+        role = userData?.role;
+      }
       localStorage.removeItem('auth-token');
       localStorage.removeItem('user');
-      window.location.href = '/';
+      if (role === 'super_admin' || role === 'theater_admin') {
+        window.location.href = '/auth/login';
+      } else {
+        window.location.href = '/';
+      }
     }
   };
 

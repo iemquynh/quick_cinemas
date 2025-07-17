@@ -2,16 +2,23 @@
 
 import MovieDetail from './MovieDetail';
 
-export default function MovieDetailClient({ movieData, movieId }) {
-  const handleBookTicket = () => {
-    alert(`Booking ticket for ${movieData.title} (ID: ${movieId})`);
-    // Ở đây bạn có thể redirect đến trang booking hoặc mở modal
-  };
+export default function MovieDetailClient({ movieData, movieId, relatedMovies }) {
+  // const handleBookTicket = () => {
+  //   if (movieData.showtimes && movieData.showtimes.length > 0) {
+  //     const showtimeId = movieData.showtimes[0]._id || movieData.showtimes[0].id;
+  //     if (showtimeId) {
+  //       window.location.href = `/book/seats?showtime_id=${showtimeId}`;
+  //       return;
+  //     }
+  //   }
+  // };
 
   return (
     <MovieDetail
       {...movieData}
-      onBook={handleBookTicket}
+      movieId={movieId} 
+      // onBook={handleBookTicket}
+      relatedMovies={relatedMovies}
     />
   );
 } 
