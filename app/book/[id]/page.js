@@ -1,9 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import SeatMap from "@/components/SeatMap";
 import { seatmapConfigs } from "@/components/seatmapConfigs";
 import Header from "@/components/Header";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 // Hàm chuẩn hóa lấy seatConfig theo tên rạp (giống trang admin)
 function getSeatConfigByTheaterName(theaterName) {
@@ -18,14 +19,17 @@ function getSeatConfigByTheaterName(theaterName) {
 }
 
 export default function BookShowtimePage() {
-  const params = useParams();
-  const showtimeId = params.id;
-
+  const { user } = useCurrentUser();
   const [showtime, setShowtime] = useState(null);
-  const [seats, setSeats] = useState([]);
-  const [selected, setSelected] = useState([]);
+  const [seats, setSeats] = useState([]); // Thêm dòng này
+  const [seatConfig, setSeatConfig] = useState(seatmapConfigs.Default); // Thêm dòng này
+  const [selectedSeats, setSelectedSeats] = useState([]);
+  const [comboCounts, setComboCounts] = useState({});
   const [loading, setLoading] = useState(true);
-  const [seatConfig, setSeatConfig] = useState(seatmapConfigs.Default);
+  const [error, setError] = useState(null);
+  const [isHolding, setIsHolding] = useState(false);
+  const router = useRouter();
+  const { id: showtimeId } = useParams();
 
   useEffect(() => {
     if (!showtimeId) return;
@@ -41,13 +45,57 @@ export default function BookShowtimePage() {
       });
   }, [showtimeId]);
 
-  const handleSeatClick = (seat) => {
-    if (!seat || seat.booked) return;
-    setSelected(prev =>
-      prev.includes(seat.seat_id)
-        ? prev.filter(id => id !== seat.seat_id)
-        : [...prev, seat.seat_id]
+  const handleSeatSelect = (seat) => {
+    setSelectedSeats((prev) =>
+      prev.some((s) => s.seat_id === seat.seat_id)
+        ? prev.filter((s) => s.seat_id !== seat.seat_id)
+        : [...prev, seat]
     );
+  };
+
+  const handleBooking = async () => {
+    if (selectedSeats.length === 0) {
+      alert("Vui lòng chọn ít nhất một ghế.");
+      return;
+    }
+    setIsHolding(true);
+    setError(null);
+    try {
+      const token = localStorage.getItem('auth-token');
+      const res = await fetch(`/api/showtimes/${showtimeId}/hold-seat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ seatIds: selectedSeats.map(s => s.seat_id) }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "Không thể giữ ghế. Vui lòng thử lại.");
+      }
+      
+      // Lưu thông tin vào localStorage để trang thanh toán sử dụng
+      localStorage.setItem('bookingInfo', JSON.stringify({
+        showtimeId,
+        selectedSeats,
+        comboCounts: comboCounts || {}, // Đảm bảo comboCounts là object
+        movie: showtime.movie_id,
+        theater: showtime.theater_id
+      }));
+
+      // Chuyển sang trang thanh toán
+      router.push(`/book/${showtimeId}/payment`);
+
+    } catch (err) {
+      setError(err.message);
+      // Nếu giữ ghế thất bại, có thể cần làm mới lại sơ đồ ghế
+      // để thấy ghế nào đã bị người khác chọn
+      // fetchShowtime(); 
+    } finally {
+      setIsHolding(false);
+    }
   };
 
   if (!showtimeId) {
@@ -94,16 +142,25 @@ export default function BookShowtimePage() {
           </div>
         </div>
         <div className="w-full max-w-5xl mx-auto bg-base-200 p-6 rounded mb-8" style={{width: '80%'}}>
-          <h2 className="text-xl font-bold mb-4">Chọn ghế ngồi</h2>
-          <SeatMap
-            seats={seats}
-            selected={selected}
-            onSeatClick={handleSeatClick}
-            readonly={false}
-            showLegend={true}
-            seatConfig={seatConfig}
-          />
-          {/* Thêm nút đặt vé ở đây nếu cần */}
+          <div className="flex-1 overflow-auto p-4">
+            <h2 className="text-xl font-bold mb-4 text-center">Chọn ghế của bạn</h2>
+            <SeatMap
+              seats={showtime?.seats_layout || []}
+              selected={selectedSeats.map(s => s.seat_id)}
+              onSeatClick={handleSeatSelect}
+              readonly={false}
+              showLegend={true}
+              seatConfig={seatConfig}
+            />
+            <button
+              onClick={handleBooking}
+              disabled={selectedSeats.length === 0 || loading || isHolding}
+              className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:bg-gray-500"
+            >
+              {isHolding ? 'Đang giữ ghế...' : 'Booking now'}
+            </button>
+            {error && <p className="text-red-500 mt-4 text-center">{error}</p>}
+          </div>
         </div>
       </div>
     </>

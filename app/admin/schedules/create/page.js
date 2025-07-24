@@ -67,9 +67,12 @@ export default function CreateShowtimePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          ...s, 
           movie: selectedMovie,
-          theater_chain: selectedTheater?.theater_chain // Thêm trường này
+          theater: s.theater,
+          room: s.room,
+          time: s.time,
+          type: s.type,
+          theater_chain: selectedTheater?.theater_chain // Thêm trường này nếu cần
         }),
       });
       if (!res.ok) ok = false;

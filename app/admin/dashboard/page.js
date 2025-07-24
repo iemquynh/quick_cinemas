@@ -165,12 +165,20 @@ export default function TheaterAdminPage() {
               <p className="text-purple-200 text-sm">Create and manage showtimes</p>
             </a>
             
-            <a 
+            {/* <a 
               href="/admin/tickets" 
               className="bg-orange-600 hover:bg-orange-700 text-white p-6 rounded-lg text-center transition-colors"
             >
               <h3 className="text-lg font-semibold mb-2">View Tickets</h3>
               <p className="text-orange-200 text-sm">Check ticket bookings</p>
+            </a> */}
+            
+            <a 
+              href="/admin/bookings" 
+              className="bg-red-600 hover:bg-red-700 text-white p-6 rounded-lg text-center transition-colors"
+            >
+              <h3 className="text-lg font-semibold mb-2">Manage Bookings</h3>
+              <p className="text-red-200 text-sm">Confirm pending bookings</p>
             </a>
           </div>
         </div>

@@ -1,14 +1,22 @@
 import mongoose from 'mongoose'
 
 const BookingSchema = new mongoose.Schema({
-    user_id: String,
-    showtime_id: String,
-    seats: [String],
-    total_price: Number,
-    status: Boolean,
-    created_at: Date,
+    user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    showtime_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Showtime', required: true },
+    seats: [
+      {
+        seat_id: { type: String },
+        type: { type: String }
+      }
+    ],
+    combos: { type: Object },
+    payment_proof_url: { type: String },
+    status: { type: String, enum: ['pending', 'using', 'cancel', 'expired'], default: 'pending' },
 }, {
     timestamps: true
 })
 
-export default mongoose.models.Booking || mongoose.model('Booking', BookingSchema)
+if (mongoose.models.BookingV2) {
+  delete mongoose.models.BookingV2;
+}
+export default mongoose.model('BookingV2', BookingSchema)

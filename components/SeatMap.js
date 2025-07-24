@@ -54,10 +54,10 @@ export default function SeatMap({ seats, selected = [], onSeatClick, readonly = 
                   if (isCouple && colIdx < rowArr.length - 1) {
                     const nextSeatId = rowArr[colIdx + 1];
                     if (COUPLE_SEATS.includes(nextSeatId)) {
-                      const seat1 = seats.find(s => s.seat_id === seatId) || { seat_id: seatId, booked: false };
-                      const seat2 = seats.find(s => s.seat_id === nextSeatId) || { seat_id: nextSeatId, booked: false };
+                      const seat1 = seats.find(s => s.seat_id === seatId) || { seat_id: seatId, status: undefined };
+                      const seat2 = seats.find(s => s.seat_id === nextSeatId) || { seat_id: nextSeatId, status: undefined };
                       const selectedFlag = selected.includes(seat1.seat_id) || selected.includes(seat2.seat_id);
-                      const booked = seat1.booked || seat2.booked;
+                      const booked = seat1.status === 'booked' || seat2.status === 'booked';
                       rowButtons.push(
                         <button
                           key={seatId + '-' + nextSeatId}
@@ -74,14 +74,15 @@ export default function SeatMap({ seats, selected = [], onSeatClick, readonly = 
                     }
                   }
                   // Render thường
-                  const seat = seats.find(s => s.seat_id === seatId) || { seat_id: seatId, booked: false };
+                  const seat = seats.find(s => s.seat_id === seatId) || { seat_id: seatId, status: undefined };
                   const selectedFlag = selected.includes(seat.seat_id);
                   const type = getSeatType(null, null, seatId);
+                  const booked = seat.status === 'booked';
                   rowButtons.push(
                     <button
                       key={seat.seat_id}
-                      className={`w-8 h-8 m-0.5 rounded ${getSeatColor(type, seat.booked, selectedFlag)} border border-gray-400 text-xs font-bold`}
-                      disabled={seat.booked || readonly}
+                      className={`w-8 h-8 m-0.5 rounded ${getSeatColor(type, booked, selectedFlag)} border border-gray-400 text-xs font-bold`}
+                      disabled={booked || readonly}
                       onClick={() => !readonly && onSeatClick && onSeatClick(seat)}
                       type="button"
                     >
@@ -107,10 +108,10 @@ export default function SeatMap({ seats, selected = [], onSeatClick, readonly = 
                     const nextCol = COLS[idx + 1];
                     const nextSeatId = row + nextCol;
                     if (COUPLE_SEATS.includes(nextSeatId)) {
-                      const seat1 = seats.find(s => s.seat_id === seatId) || { seat_id: seatId, booked: false };
-                      const seat2 = seats.find(s => s.seat_id === nextSeatId) || { seat_id: nextSeatId, booked: false };
+                      const seat1 = seats.find(s => s.seat_id === seatId) || { seat_id: seatId, status: undefined };
+                      const seat2 = seats.find(s => s.seat_id === nextSeatId) || { seat_id: nextSeatId, status: undefined };
                       const selectedFlag = selected.includes(seat1.seat_id) || selected.includes(seat2.seat_id);
-                      const booked = seat1.booked || seat2.booked;
+                      const booked = seat1.status === 'booked' || seat2.status === 'booked';
                       rowButtons.push(
                         <button
                           key={seatId + '-' + nextSeatId}
@@ -127,13 +128,14 @@ export default function SeatMap({ seats, selected = [], onSeatClick, readonly = 
                     }
                   }
                   // Render thường/vip
-                  const seat = seats.find(s => s.seat_id === seatId) || { row, col, seat_id: seatId, type: getSeatType(row, col), booked: false };
+                  const seat = seats.find(s => s.seat_id === seatId) || { row, col, seat_id: seatId, type: getSeatType(row, col), status: undefined };
                   const selectedFlag = selected.includes(seat.seat_id);
+                  const booked = seat.status === 'booked';
                   rowButtons.push(
                     <button
                       key={seat.seat_id}
-                      className={`w-8 h-8 m-0.5 rounded ${getSeatColor(seat.type, seat.booked, selectedFlag)} border border-gray-400 text-xs font-bold`}
-                      disabled={seat.booked || readonly}
+                      className={`w-8 h-8 m-0.5 rounded ${getSeatColor(seat.type, booked, selectedFlag)} border border-gray-400 text-xs font-bold`}
+                      disabled={booked || readonly}
                       onClick={() => !readonly && onSeatClick && onSeatClick(seat)}
                       type="button"
                     >

@@ -11,7 +11,14 @@ const showtimeSchema = new mongoose.Schema({
     room: String,
     time: Date,
     type: String,
-    seats_layout: [{seat_id: String, booked: Boolean, user_id: String}],
+    seats_layout: [{
+      seat_id: { type: String, required: true },
+      type: { type: String, required: true },
+      status: { type: String, required: true },
+      pending_user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+      pending_time: { type: Date, default: null },
+      booked_user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }
+    }],
 }, {
     timestamps: true
 })

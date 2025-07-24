@@ -7,18 +7,13 @@ import jwt from 'jsonwebtoken';
 export async function POST(req) {
   try {
     const { email, password } = await req.json();
-
-    // Validate input
     if (!email || !password) {
       return NextResponse.json(
         { success: false, message: 'Email and password are required' },
         { status: 400 }
       );
     }
-
     await connectToDatabase();
-
-    // Find user by email
     const user = await User.findOne({ email });
     if (!user) {
       return NextResponse.json(
@@ -26,8 +21,6 @@ export async function POST(req) {
         { status: 401 }
       );
     }
-
-    // Verify password
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
     if (!isValidPassword) {
       return NextResponse.json(
@@ -35,21 +28,20 @@ export async function POST(req) {
         { status: 401 }
       );
     }
-
-    // Create JWT token
-    const token = jwt.sign(
-      { userId: user._id, email: user.email },
-      process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '7d' }
-    );
-
-    // Create response with user data và token
+    const token = jwt.sign({
+      userId: user._id,
+      email: user.email,
+      role: user.role,
+      theater_chain: user.theater_chain || null,
+    }, process.env.JWT_SECRET || 'your-secret-key', { expiresIn: '7d' });
+    // Trả về cả _id và id để tương thích
     return NextResponse.json({
       success: true,
       message: 'Login successful',
       token,
       user: {
-        id: user._id,
+        _id: user._id,
+        id: user._id, // fallback cho client cũ
         username: user.username,
         email: user.email,
         role: user.role,

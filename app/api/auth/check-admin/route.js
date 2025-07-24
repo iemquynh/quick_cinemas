@@ -43,11 +43,11 @@ export async function GET(request) {
       success: true,
       isAdmin: true,
       user: {
-        id: user._id,
+        _id: user._id, // Sửa ở đây
         username: user.username,
         email: user.email,
         role: user.role,
-        theater_chain: user.theater_chain // Thêm dòng này để client nhận được theater_chain
+        theater_chain: user.theater_chain
       }
     });
     
