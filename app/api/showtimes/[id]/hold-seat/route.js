@@ -34,6 +34,31 @@ export async function POST(req, { params }) {
       return NextResponse.json({ error: 'Showtime not found' }, { status: 404 });
     }
 
+    // --- AUTO RELEASE EXPIRED PENDING SEATS (2 MINUTES) ---
+    const now = Date.now();
+    const HOLD_TIMEOUT_MS = 2 * 60 * 1000; // 2 phút
+    let releasedSeats = [];
+    // Lấy tất cả booking pending của showtime này
+    const bookings = await import('@/models/Booking').then(m => m.default.find({ showtime_id: showtimeId, status: 'pending' }));
+    for (const seat of showtime.seats_layout) {
+      if (seat.status === 'pending' && seat.pending_time) {
+        // Kiểm tra booking liên quan
+        const relatedBooking = bookings.find(b => b.seats.some(s => s.seat_id === seat.seat_id));
+        const hasProof = relatedBooking && relatedBooking.payment_proof_url;
+        const pendingTime = new Date(seat.pending_time).getTime();
+        if (!hasProof && now - pendingTime > HOLD_TIMEOUT_MS) {
+          seat.status = 'available';
+          seat.pending_user = null;
+          seat.pending_time = null;
+          releasedSeats.push(seat.seat_id);
+        }
+      }
+    }
+    if (releasedSeats.length > 0) {
+      await showtime.save(); // Save if any seat was released
+    }
+    // --- END AUTO RELEASE ---
+
     const unavailableSeats = [];
 
     // Kiểm tra xem ghế có available không

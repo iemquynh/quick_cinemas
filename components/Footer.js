@@ -8,7 +8,7 @@ export default function Footer() {
   maxDateObj.setMonth(maxDateObj.getMonth() + 3);
   const maxDate = maxDateObj.toISOString().split('T')[0];
   return (
-    <footer className="fixed bottom-0 left-0 w-full bg-white py-4 px-2 shadow z-50 border-t border-gray-200">
+    <footer className="fixed bottom-0 left-0 w-full bg-white py-4 px-2 shadow z-10 border-t border-gray-200">
       <form className=" w-full max-w-5xl mx-auto 
         flex flex-row flex-wrap items-center justify-center 
         gap-x-4 gap-y-2

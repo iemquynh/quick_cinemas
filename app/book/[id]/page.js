@@ -55,7 +55,7 @@ export default function BookShowtimePage() {
 
   const handleBooking = async () => {
     if (selectedSeats.length === 0) {
-      alert("Vui lòng chọn ít nhất một ghế.");
+      alert("Please select at least one seat.");
       return;
     }
     setIsHolding(true);
@@ -73,9 +73,9 @@ export default function BookShowtimePage() {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.message || "Không thể giữ ghế. Vui lòng thử lại.");
+        throw new Error(data.message || "Unable to hold seats. Please try again.");
       }
-      
+
       // Lưu thông tin vào localStorage để trang thanh toán sử dụng
       localStorage.setItem('bookingInfo', JSON.stringify({
         showtimeId,
@@ -99,51 +99,44 @@ export default function BookShowtimePage() {
   };
 
   if (!showtimeId) {
-    return <div className="p-8 text-center text-white">Không tìm thấy suất chiếu.</div>;
+    return <div className="p-8 text-center text-white">Showtime not found.</div>;
   }
   if (loading) {
-    return <div className="p-8 text-center text-white">Đang tải dữ liệu...</div>;
+    return <div className="p-8 text-center text-white">Loading data...</div>;
   }
   if (!showtime) {
-    return <div className="p-8 text-center text-white">Không tìm thấy thông tin suất chiếu.</div>;
+    return <div className="p-8 text-center text-white">Showtime information not found.</div>;
   }
 
   return (
     <>
       <Header />
       <div className="min-h-screen bg-[#1a2332] pt-24 pb-12">
-        <div className="w-full max-w-5xl mx-auto bg-base-200 p-6 rounded mb-8" style={{width: '80%'}}>
-          <h2 className="text-xl font-bold mb-4">Showtime Details</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="font-bold">Film:</label>
-              <div className="input input-bordered w-full">{showtime.movie_id?.title || ''}</div>
-            </div>
-            <div>
-              <label className="font-bold">Theater:</label>
-              <div className="input input-bordered w-full">{showtime.theater_id?.name || ''}</div>
-            </div>
-            <div>
-              <label className="font-bold">Time:</label>
-              <div className="input input-bordered w-full">{new Date(showtime.time).toLocaleString()}</div>
-            </div>
-            <div>
-              <label className="font-bold">Address:</label>
-              <div className="input input-bordered w-full">{showtime.theater_id.address}</div>
-            </div>
-            <div>
-              <label className="font-bold">Room:</label>
-              <div className="input input-bordered w-full">{showtime.room}</div>
-            </div>
-            <div>
-              <label className="font-bold">Screen Type:</label>
-              <div className="input input-bordered w-full">{showtime.type}</div>
-            </div>
+        <div className="w-full max-w-5xl mx-auto bg-base-200 px-4 md:px-6 py-6 rounded mb-8">
+          <h2 className="text-2xl font-bold mb-6 text-center">Showtime Details</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[
+              { label: 'Movie', value: showtime.movie_id?.title },
+              { label: 'Theater', value: showtime.theater_id?.name },
+              { label: 'Time', value: new Date(showtime.time).toLocaleString() },
+              { label: 'Address', value: showtime.theater_id?.address },
+              { label: 'Room', value: showtime.room },
+              { label: 'Screen Type', value: showtime.type },
+            ].map((item, idx) => (
+              <div key={idx}>
+                <label className="block font-semibold text-sm mb-1 text-white">{item.label}:</label>
+                <div className="w-full rounded border border-gray-500 px-3 py-2 text-white bg-gray-800 text-sm break-words whitespace-pre-wrap min-h-[40px]">
+                  {item.value || 'N/A'}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-        <div className="w-full max-w-5xl mx-auto bg-base-200 p-6 rounded mb-8" style={{width: '80%'}}>
+
+        <div className="w-full max-w-5xl mx-auto bg-base-200 px-4 md:px-6 py-6 rounded mb-8">
+
           <div className="flex-1 overflow-auto p-4">
-            <h2 className="text-xl font-bold mb-4 text-center">Chọn ghế của bạn</h2>
+            <h2 className="text-xl font-bold mb-4 text-center">Select your seat</h2>
             <SeatMap
               seats={showtime?.seats_layout || []}
               selected={selectedSeats.map(s => s.seat_id)}
@@ -157,7 +150,7 @@ export default function BookShowtimePage() {
               disabled={selectedSeats.length === 0 || loading || isHolding}
               className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:bg-gray-500"
             >
-              {isHolding ? 'Đang giữ ghế...' : 'Booking now'}
+              {isHolding ? 'Holding seat...' : 'Booking now'}
             </button>
             {error && <p className="text-red-500 mt-4 text-center">{error}</p>}
           </div>

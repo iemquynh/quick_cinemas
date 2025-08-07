@@ -50,7 +50,7 @@ export default function CreateTheaterPage() {
   }
 
   return (
-    <AdminGuard>
+    // <AdminGuard>
       <div className="flex items-center justify-center min-h-[calc(100vh-64px)] pt-10"> {/* 64px là chiều cao navbar */}
         <div className="w-full max-w-md bg-base-200 p-6 rounded shadow-lg">
           <h2 className="text-xl font-bold mb-4 text-center">Create a theater</h2>
@@ -91,6 +91,6 @@ export default function CreateTheaterPage() {
           {message && <div className="mt-2 text-error text-center">{message}</div>}
         </div>
       </div>
-    </AdminGuard>
+    // </AdminGuard>
   );
 } 

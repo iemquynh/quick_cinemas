@@ -41,7 +41,7 @@ export default function AdminTicketsPage() {
   }
 
   return (
-    <AdminGuard>
+    // <AdminGuard>
       <div className="container mx-auto py-8" style={{marginTop: 55}}>
         <h1 className="text-2xl font-bold text-white mb-6">Quản lý vé</h1>
         <div className="flex gap-4 mb-6">
@@ -93,6 +93,6 @@ export default function AdminTicketsPage() {
           </div>
         )}
       </div>
-    </AdminGuard>
+    // </AdminGuard>
   );
 } 

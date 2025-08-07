@@ -92,14 +92,16 @@ export async function GET(req) {
     const { searchParams } = new URL(req.url);
     const movieId = searchParams.get('movieId');
     const date = searchParams.get('date'); // yyyy-mm-dd
+    const theaterId = searchParams.get('theater_id');
 
     // Lấy token từ header Authorization
     const authHeader = req.headers.get('authorization');
     const token = authHeader?.split(' ')[1];
 
     // Xây dựng query
-    const query = {};
+    const query = {}; 
     if (movieId) query.movie_id = new mongoose.Types.ObjectId(movieId);
+    if (theaterId) query.theater_id = new mongoose.Types.ObjectId(theaterId);
     if (date) {
       query.$expr = {
         $eq: [
@@ -111,7 +113,7 @@ export async function GET(req) {
 
     let showtimes = await Showtime.find(query)
       .populate('movie_id', 'title poster')
-      .populate('theater_id', 'name address');
+      .populate('theater_id', 'name address')
 
     if (token) {
       try {

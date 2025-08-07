@@ -6,6 +6,7 @@ import { getMovieById, updateMovie } from '../../../../../utils/movieApi';
 import AdminGuard from '../../../../../components/AdminGuard';
 import Select from 'react-select';
 
+
 export default function EditMoviePage({ params }) {
   const router = useRouter();
   const unwrappedParams = use(params);
@@ -62,8 +63,8 @@ export default function EditMoviePage({ params }) {
       backgroundColor: state.isSelected
         ? '#2563eb'
         : state.isFocused
-        ? '#1e293b'
-        : '#374151',
+          ? '#1e293b'
+          : '#374151',
       color: '#fff',
       fontWeight: state.isSelected ? 'bold' : 'normal',
       cursor: 'pointer',
@@ -194,7 +195,7 @@ export default function EditMoviePage({ params }) {
       <div className="min-h-screen bg-gray-900 flex items-center justify-center" >
         <div className="text-center">
           <div className="text-red-400 text-xl mb-4">{error}</div>
-          <a 
+          <a
             href="/admin/movies"
             className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
           >
@@ -206,18 +207,18 @@ export default function EditMoviePage({ params }) {
   }
 
   return (
-    <AdminGuard>
-      <div className="min-h-screen bg-gray-900 py-8" style={{marginTop: 55}}>
-        <div className="container mx-auto px-4 max-w-4xl">
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-1x1 font-bold text-white">Edit Movie</h1>
-            <a 
-              href="/admin/movies"
-              className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
-            >
-              Back to Movies
-            </a>
-          </div>
+    // <AdminGuard>
+    <div className="min-h-screen bg-gray-900 py-8 mt-5">
+      <div className="container mx-auto px-4 max-w-4xl">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-white">Edit Movie</h1>
+          <a
+            href="/admin/movies"
+            className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+          >
+            Back to Movies
+          </a>
+        </div>
 
         <div className="bg-gray-800 rounded-lg p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -287,6 +288,7 @@ export default function EditMoviePage({ params }) {
 
             {/* Runtime and Release Date */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Runtime */}
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   Runtime *
@@ -297,8 +299,9 @@ export default function EditMoviePage({ params }) {
                     min="0"
                     name="runtimeHour"
                     value={runtimeHour}
-                    onChange={e => setRuntimeHour(e.target.value)}
-                    className="w-20 px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+                    onChange={(e) => setRuntimeHour(e.target.value)}
+                    required
+                    className="w-24 px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
                     placeholder="Hours"
                   />
                   <input
@@ -307,12 +310,15 @@ export default function EditMoviePage({ params }) {
                     max="59"
                     name="runtimeMinute"
                     value={runtimeMinute}
-                    onChange={e => setRuntimeMinute(e.target.value)}
-                    className="w-20 px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+                    onChange={(e) => setRuntimeMinute(e.target.value)}
+                    required
+                    className="w-28 px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
                     placeholder="Minutes"
                   />
                 </div>
               </div>
+
+              {/* Release Date */}
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   Release Date *
@@ -323,10 +329,12 @@ export default function EditMoviePage({ params }) {
                   value={formData.releaseDate}
                   onChange={handleReleaseDateChange}
                   required
+                  min={new Date().toISOString().split("T")[0]} // chỉ chọn từ hôm nay
                   className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
                 />
               </div>
             </div>
+
             {/* Genre and Tags */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -440,6 +448,6 @@ export default function EditMoviePage({ params }) {
         </div>
       </div>
     </div>
-    </AdminGuard>
+    // </AdminGuard>
   );
 } 

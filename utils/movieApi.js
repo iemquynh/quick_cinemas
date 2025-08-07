@@ -3,7 +3,12 @@ const API_BASE_URL = '/api/movies';
 // Lấy tất cả phim
 export const getAllMovies = async () => {
   try {
-    const response = await fetch(API_BASE_URL);
+    const token = localStorage.getItem('auth-token'); // hoặc sessionStorage
+    const response = await fetch('/api/movies', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
     const data = await response.json();
     return data;
   } catch (error) {

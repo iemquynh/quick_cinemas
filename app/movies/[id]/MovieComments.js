@@ -136,45 +136,50 @@ export default function MovieComments({ movieId, readOnly = false }) {
   }
 
   return (
-    <div className="mt-14 w-full max-w-3xl mx-auto">
+    <div className="relative z-10 mt-14 w-full max-w-3xl mx-auto px-4">
       <h3 className="text-lg font-bold mb-2">Comment & Rating</h3>
       {/* Hiển thị rating trung bình */}
-      <div className="flex items-center gap-2 mb-2">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
         {ratingAverage ? (
           <>
             <span className="text-yellow-400 text-xl font-bold">
               <StarRating value={ratingAverage} readOnly />
             </span>
-            <span className="text-yellow-400 font-bold text-lg">{ratingAverage}/5 ({ratingCount} {ratingCount <= 1 ? 'rating' : 'ratings'})</span>
+            <span className="text-yellow-400 font-bold text-lg">
+              {ratingAverage}/5 ({ratingCount} {ratingCount <= 1 ? 'rating' : 'ratings'})
+            </span>
             <span className="text-gray-400">
               ({comments.length} {comments.length <= 1 ? 'comment' : 'comments'})
             </span>
           </>
         ) : (
-          <span className="text-yellow-400 text-xl font-bold">Not having rating <span className="text-gray-400">({comments.length} {comments.length <= 1 ? 'comment' : 'comments'})</span></span>
+          <span className="text-yellow-400 text-xl font-bold">
+            Not having rating{' '}
+            <span className="text-gray-400">
+              ({comments.length} {comments.length <= 1 ? 'comment' : 'comments'})
+            </span>
+          </span>
         )}
       </div>
       {/* Nếu không phải readOnly thì mới cho nhập rating và bình luận */}
       {!readOnly && (
         <form onSubmit={handleSubmit} className="flex flex-col gap-2 mb-4">
-          <div className="flex items-center gap-2 w-full">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full">
             <span>Rating:</span>
             <StarRating value={rating} onChange={handleRate} />
-            <span className="ml-2 text-yellow-500 font-bold">{rating}/5</span>
+            <span className="text-yellow-500 font-bold">{rating}/5</span>
           </div>
-          <div className="flex w-full items-center gap-2">
+          <div className="flex flex-col sm:flex-row w-full items-stretch gap-2">
             <textarea
-              className="textarea textarea-bordered flex-1 min-w-0"
-              style={{ width: '80%' }}
+              className="textarea textarea-bordered w-full"
               placeholder="Typing your comment..."
               value={content}
               onChange={e => setContent(e.target.value)}
               required
             />
             <button
-              className="btn btn-primary ml-2 whitespace-nowrap"
+              className="btn btn-primary sm:w-auto whitespace-nowrap"
               type="submit"
-              style={{ width: '10%' }}
             >
               Send
             </button>
@@ -185,10 +190,10 @@ export default function MovieComments({ movieId, readOnly = false }) {
       <div>
         {comments.map((c, idx) => (
           <div key={idx} className="mb-2 p-2 bg-base-200 rounded">
-            <div className="flex items-center gap-2 font-semibold">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 font-semibold">
               <span>{c.user_id?.username || 'Ẩn danh'}</span>
               {c.content && (
-                <span className="text-white font-normal ml-2">{c.content}</span>
+                <span className="text-white font-normal sm:ml-2">{c.content}</span>
               )}
             </div>
           </div>
@@ -196,4 +201,5 @@ export default function MovieComments({ movieId, readOnly = false }) {
       </div>
     </div>
   );
+  
 } 

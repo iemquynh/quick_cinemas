@@ -13,6 +13,7 @@ const UserSchema = new mongoose.Schema({
         required: function() { return this.role === 'theater_admin'; }
     },
     viewed_movies: [String], // movie id
+    promotion_image: [String],
     created_at: Date,
     updated_at: Date,
 }, {

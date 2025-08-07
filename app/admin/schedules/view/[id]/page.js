@@ -26,22 +26,33 @@ function getSeatColor(type, booked, selected) {
   return "bg-gray-200 text-black";
 }
 
-const ROWS = ["A","B","C","D","E","F","G","H","I","J","K"];
-const COLS = Array.from({length: 19}, (_, i) => i + 1); // 1-19
+const ROWS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K"];
+const COLS = Array.from({ length: 19 }, (_, i) => i + 1); // 1-19
 
 function generateSeatsLayout(existingLayout) {
   if (Array.isArray(existingLayout) && existingLayout.length > 0) return existingLayout;
+
   let seats = [];
   for (let r = 0; r < ROWS.length; r++) {
     let row = ROWS[r];
     for (let c = 0; c < COLS.length; c++) {
       let col = COLS[c];
       let seatId = row + col;
-      seats.push({ seat_id: seatId, row, col, booked: false, user_id: null });
+      seats.push({
+        seat_id: seatId,
+        row,
+        col,
+        type: getSeatType(row, col),
+        status: "available",
+        pending_user: null,
+        pending_time: null,
+        booked_user: null,
+      });
     }
   }
   return seats;
 }
+
 
 const getSeatConfigByTheaterName = (theaterName) => {
   if (!theaterName) return seatmapConfigs.Default;
@@ -65,9 +76,41 @@ export default function ShowtimeDetailPage({ params }) {
   const [editMode, setEditMode] = useState(false);
   const [form, setForm] = useState({ movie: '', theater: '', time: '', room: '', type: '' });
   const [theaterDetail, setTheaterDetail] = useState(null);
+  const [hasBookedSeat, setHasBookedSeat] = useState(false);
+
+
+  // useEffect(() => {
+  //   const token = localStorage.getItem('token');
+  //   fetch(`/api/showtimes/${unwrappedParams.id}`, {
+  //     headers: {
+  //       'Authorization': `Bearer ${token}`
+  //     }
+  //   })
+  //     .then(res => res.json())
+  //     .then(data => {
+  //       setShowtime(data);
+  //       setSeats(generateSeatsLayout(data.seats_layout));
+  //       setForm({
+  //         movie: data.movie_id?._id || data.movie_id || '',
+  //         theater: data.theater_id?._id || data.theater_id || '',
+  //         time: data.time ? new Date(data.time).toISOString().slice(0, 16) : '',
+  //         room: data.room || '',
+  //         type: data.type || ''
+  //       });
+  //       setLoading(false);
+  //       // Lấy chi tiết rạp để render dropdown
+  //       if (data.theater_id?._id || data.theater_id) {
+  //         const tid = data.theater_id?._id || data.theater_id;
+  //         fetch(`/api/theaters/${tid}`)
+  //           .then(res => res.json())
+  //           .then(setTheaterDetail);
+  //       }
+  //     });
+  // }, [unwrappedParams.id]);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
+  
     fetch(`/api/showtimes/${unwrappedParams.id}`, {
       headers: {
         'Authorization': `Bearer ${token}`
@@ -76,7 +119,12 @@ export default function ShowtimeDetailPage({ params }) {
       .then(res => res.json())
       .then(data => {
         setShowtime(data);
-        setSeats(generateSeatsLayout(data.seats_layout));
+        
+        // Tạo layout ghế từ dữ liệu nhận về
+        const layout = generateSeatsLayout(data.seats_layout);
+        setSeats(layout);
+  
+        // Cập nhật form thông tin
         setForm({
           movie: data.movie_id?._id || data.movie_id || '',
           theater: data.theater_id?._id || data.theater_id || '',
@@ -84,16 +132,23 @@ export default function ShowtimeDetailPage({ params }) {
           room: data.room || '',
           type: data.type || ''
         });
+  
+        // Kiểm tra nếu có ghế đã được đặt
+        const anyBooked = layout.some(s => s.status === "booked" || s.booked_user);
+        setHasBookedSeat(anyBooked);
+  
         setLoading(false);
-        // Lấy chi tiết rạp để render dropdown
-        if (data.theater_id?._id || data.theater_id) {
-          const tid = data.theater_id?._id || data.theater_id;
+  
+        // Gọi thêm API lấy chi tiết rạp
+        const tid = data.theater_id?._id || data.theater_id;
+        if (tid) {
           fetch(`/api/theaters/${tid}`)
             .then(res => res.json())
             .then(setTheaterDetail);
         }
       });
   }, [unwrappedParams.id]);
+  
 
   const handleSeatClick = (seat) => {
     if (Array.isArray(seat)) {
@@ -129,7 +184,7 @@ export default function ShowtimeDetailPage({ params }) {
     const token = localStorage.getItem('token');
     const res = await fetch(`/api/showtimes/${unwrappedParams.id}`, {
       method: "PUT",
-      headers: { 
+      headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
       },
@@ -165,7 +220,7 @@ export default function ShowtimeDetailPage({ params }) {
     const token = localStorage.getItem('token');
     const res = await fetch(`/api/showtimes/${unwrappedParams.id}`, {
       method: "PUT",
-      headers: { 
+      headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
       },
@@ -191,78 +246,112 @@ export default function ShowtimeDetailPage({ params }) {
   if (!showtime) return <div className="p-8">Không tìm thấy suất chiếu</div>;
 
   // Kiểm tra có ghế nào đã đặt không
-  const hasBookedSeat = seats.some(s => s.booked);
+  // const hasBookedSeat = seats.some(s => s.booked);
 
   return (
-    <AdminGuard>
-      <TheaterAdminGuard>
-        <div className="min-h-screen bg-[#1a2332] pt-24">
-          <div className="max-w-4xl mx-auto bg-base-200 p-6 rounded">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Chi tiết suất chiếu</h2>
-              {!editMode && !hasBookedSeat && <button className="btn btn-outline btn-info" onClick={handleEdit}>Edit</button>}
-            </div>
-            <form className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="font-bold">Phim:</label>
-                <input className="input input-bordered w-full" value={showtime.movie_id?.title || ''} disabled />
-              </div>
-              <div>
-                <label className="font-bold">Rạp:</label>
-                <input className="input input-bordered w-full" value={showtime.theater_id?.name || ''} disabled />
-              </div>
-              <div>
-                <label className="font-bold">Thời gian:</label>
-                <input className="input input-bordered w-full" type="datetime-local" name="time" value={form.time} onChange={handleFormChange} disabled={!editMode || hasBookedSeat} />
-              </div>
-              <div>
-                <label className="font-bold">Phòng:</label>
-                {editMode && theaterDetail && !hasBookedSeat ? (
-                  <select className="select select-bordered w-full" name="room" value={form.room} onChange={handleFormChange}>
-                    <option value="">Chọn phòng</option>
-                    {Array.from({length: theaterDetail.rooms}, (_, i) => `Room ${i+1}`).map(room => (
-                      <option key={room} value={room}>{room}</option>
-                    ))}
-                  </select>
-                ) : (
-                  <input className="input input-bordered w-full" name="room" value={form.room} disabled />
-                )}
-              </div>
-              <div>
-                <label className="font-bold">Loại màn hình:</label>
-                {editMode && theaterDetail && !hasBookedSeat ? (
-                  <select className="select select-bordered w-full" name="type" value={form.type} onChange={handleFormChange}>
-                    <option value="">Chọn loại màn hình</option>
-                    {theaterDetail.screenTypes.map(type => (
-                      <option key={type} value={type}>{type}</option>
-                    ))}
-                  </select>
-                ) : (
-                  <input className="input input-bordered w-full" name="type" value={form.type} disabled />
-                )}
-              </div>
-            </form>
-            {editMode && !hasBookedSeat && (
-              <div className="flex gap-2 mb-4">
-                <button className="btn btn-primary" onClick={handleSaveInfo} type="button">Save</button>
-                <button className="btn btn-secondary" onClick={handleCancel} type="button">Cancel</button>
-              </div>
+    <div className="min-h-screen bg-[#1a2332] pt-20 px-4 md:px-6 lg:px-12">
+      <div className="max-w-5xl mx-auto bg-base-200 p-6 rounded-xl shadow-lg">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-white">Schedule Information</h2>
+          {!editMode && !hasBookedSeat && (
+            <button className="btn btn-outline btn-info" onClick={handleEdit}>Edit</button>
+          )}
+
+        </div>
+
+        {hasBookedSeat && (
+          <div className="mb-4 text-warning font-medium">
+            ⚠️ Some seats have been booked. You cannot edit the showtime information.
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div>
+            <label className="font-semibold text-white">🎬 Movie:</label>
+            <input className="input input-bordered w-full" value={showtime.movie_id?.title || ''} disabled />
+          </div>
+          <div>
+            <label className="font-semibold text-white">🏢 Theater:</label>
+            <input className="input input-bordered w-full" value={showtime.theater_id?.name || ''} disabled />
+          </div>
+          <div>
+            <label className="font-semibold text-white">🕒 Time:</label>
+            <input
+              className="input input-bordered w-full"
+              type="datetime-local"
+              name="time"
+              value={form.time}
+              onChange={handleFormChange}
+              disabled={!editMode || hasBookedSeat}
+            />
+          </div>
+          <div>
+            <label className="font-semibold text-white">🏠 Room:</label>
+            {editMode && theaterDetail && !hasBookedSeat ? (
+              <select
+                className="select select-bordered w-full"
+                name="room"
+                value={form.room}
+                onChange={handleFormChange}
+              >
+                <option value="">Select room</option>
+                {Array.from({ length: theaterDetail.rooms }, (_, i) => `Room ${i + 1}`).map(room => (
+                  <option key={room} value={room}>
+                    {room}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input className="input input-bordered w-full" name="room" value={form.room} disabled />
             )}
-            <div className="mb-4">
-              <SeatMap
-                seats={seats}
-                selected={selected}
-                onSeatClick={handleSeatClick}
-                readonly={false}
-                showLegend={true}
-                seatConfig={getSeatConfigByTheaterName(theaterDetail?.name)}
-              />
-            </div>
-            <button className="btn btn-primary mt-4" onClick={handleSaveSeats} disabled={selected.length === 0}>Lưu trạng thái chọn ghế</button>
-            {message && <div className="mt-2 text-info">{message}</div>}
+          </div>
+          <div>
+            <label className="font-semibold text-white">📺 Type screen:</label>
+            {editMode && theaterDetail && !hasBookedSeat ? (
+              <select
+                className="select select-bordered w-full"
+                name="type"
+                value={form.type}
+                onChange={handleFormChange}
+              >
+                <option value="">Select type screen</option>
+                {theaterDetail.screenTypes.map(type => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input className="input input-bordered w-full" name="type" value={form.type} disabled />
+            )}
           </div>
         </div>
-      </TheaterAdminGuard>
-    </AdminGuard>
+
+        {editMode && !hasBookedSeat && (
+          <div className="flex gap-3 mb-6">
+            <button className="btn btn-primary" onClick={handleSaveInfo} type="button">
+              💾 Save
+            </button>
+            <button className="btn btn-secondary" onClick={handleCancel} type="button">
+              ❌ Cancel
+            </button>
+          </div>
+        )}
+
+        <div className="mb-6">
+          <SeatMap
+            seats={seats}
+            selected={selected}
+            onSeatClick={handleSeatClick}
+            readonly={false}
+            showLegend={true}
+            seatConfig={getSeatConfigByTheaterName(theaterDetail?.name)}
+          />
+        </div>
+
+        {message && <div className="mt-2 text-info">{message}</div>}
+      </div>
+    </div>
   );
+
 } 

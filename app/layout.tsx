@@ -1,5 +1,6 @@
 import './globals.css'
 import { ToastContainer } from '@/components/Toast'
+import { AdminProvider } from '@/hooks/useCurrentUser'
 
 export const metadata = {
   title: 'QuickCinema',
@@ -14,8 +15,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {children}
-        <ToastContainer />
+          <AdminProvider>
+            {children}
+            <ToastContainer />
+          </AdminProvider>
       </body>
     </html>
   )

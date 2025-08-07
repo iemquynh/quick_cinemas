@@ -7,6 +7,19 @@ import Notification from '@/models/Notification';
 import { connectToDatabase } from '@/lib/mongodb';
 import { notifyTheaterAdmin, notifyUser } from '@/lib/socket';
 import { getAuth } from '@/utils/auth';
+import { ticketPrices } from '@/config/ticketPrices';
+
+// Hàm tính tổng tiền giống FE
+function getSeatPrice(theaterChain, screenType, seatType) {
+  const chain = ticketPrices[theaterChain] || ticketPrices[Object.keys(ticketPrices)[0]];
+  const type = chain[screenType] || chain[Object.keys(chain)[0]];
+  return type[seatType] || type["normal"] || 70000;
+}
+const COMBOS = [
+  { id: 1, name: "Bắp + Nước", price: 70000 },
+  { id: 2, name: "Combo 2 Bắp + 2 Nước", price: 130000 },
+  { id: 3, name: "Combo Gia đình", price: 199000 },
+];
 
 export async function POST(req) {
   await connectToDatabase();
@@ -17,6 +30,40 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Lấy showtime để lấy thông tin rạp, loại màn hình
+    const showtime = await Showtime.findById(body.showtime_id);
+    if (!showtime) {
+      throw new Error('Showtime not found');
+    }
+    // Tính tổng tiền
+    let seatTotal = 0;
+    const countedCoupleSeats = new Set();
+    for (let i = 0; i < body.seats.length; i++) {
+      const s = body.seats[i];
+      if (s.type === 'couple') {
+        if (countedCoupleSeats.has(s.seat_id)) continue;
+        const pair = body.seats.find(
+          (other, idx) =>
+            other.type === 'couple' &&
+            other.seat_id !== s.seat_id &&
+            !countedCoupleSeats.has(other.seat_id)
+        );
+        countedCoupleSeats.add(s.seat_id);
+        if (pair) countedCoupleSeats.add(pair.seat_id);
+        seatTotal += getSeatPrice(showtime.theater_chain, showtime.type, 'couple');
+      } else {
+        seatTotal += getSeatPrice(showtime.theater_chain, showtime.type, s.type);
+      }
+    }
+    let comboTotal = 0;
+    if (body.combos) {
+      comboTotal = Object.entries(body.combos).reduce((sum, [id, qty]) => {
+        const combo = COMBOS.find(c => c.id === Number(id));
+        return sum + (combo ? combo.price * qty : 0);
+      }, 0);
+    }
+    const total = seatTotal + comboTotal;
+
     // API này không cần cập nhật ghế nữa, chỉ tạo booking
     const booking = new Booking({
       user_id: userId,
@@ -25,13 +72,9 @@ export async function POST(req) {
       combos: body.combos,
       payment_proof_url: body.payment_proof_url,
       status: 'pending',
+      total: total,
     });
     await booking.save();
-    
-    const showtime = await Showtime.findById(body.showtime_id);
-    if (!showtime) {
-        throw new Error('Showtime not found');
-    }
 
     // Gửi và lưu notification
     const admins = await User.find({ role: 'theater_admin', theater_chain: showtime.theater_chain });

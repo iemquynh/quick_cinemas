@@ -11,6 +11,18 @@ export async function GET(req) {
   await connectToDatabase();
   try {
     const { searchParams } = new URL(req.url);
+    const bookingId = searchParams.get('booking_id');
+    if (bookingId) {
+      // Lấy booking theo booking_id
+      const booking = await Booking.findById(bookingId)
+        .populate('user_id', 'username email')
+        .populate({
+          path: 'showtime_id',
+          populate: { path: 'movie_id', select: 'title poster' }
+        });
+      if (!booking) return NextResponse.json({ bookings: [] });
+      return NextResponse.json({ bookings: [booking] });
+    }
     const status = searchParams.get('status') || 'pending';
     const theaterChain = searchParams.get('theater_chain');
     let query = { status };
@@ -29,6 +41,66 @@ export async function GET(req) {
         }
       })
       .sort({ createdAt: -1 });
+
+    // --- NOTIFY ADMIN IF BOOKING WITH PAYMENT PROOF IS ABOUT TO EXPIRE ---
+    const now = Date.now();
+    const HOLD_TIMEOUT_MS = 2 * 60 * 1000; // 2 phút
+    const WARNING_BEFORE_MS = 30 * 1000; // 30 giây cuối
+    for (const booking of bookings) {
+      if (
+        booking.status === 'pending' &&
+        booking.payment_proof_url &&
+        booking.createdAt &&
+        (now - new Date(booking.createdAt).getTime() > HOLD_TIMEOUT_MS - WARNING_BEFORE_MS) &&
+        (now - new Date(booking.createdAt).getTime() < HOLD_TIMEOUT_MS)
+      ) {
+        // Gửi notification cho theater admin
+        const showtime = booking.showtime_id;
+        if (showtime && showtime.theater_chain) {
+          const message = `Có vé đã upload hóa đơn sắp hết hạn xác nhận!`;
+          // Lưu notification vào DB cho tất cả admin của theater_chain
+          const admins = await User.find({ role: 'theater_admin', theater_chain: showtime.theater_chain });
+          for (const admin of admins) {
+            // Kiểm tra đã có notification chưa (tránh spam)
+            const existed = await Notification.findOne({
+              user_id: admin._id,
+              booking_id: booking._id,
+              type: 'booking_expiring',
+            });
+            if (!existed) {
+              const notification = await Notification.create({
+                user_id: admin._id,
+                booking_id: booking._id,
+                type: 'booking_expiring',
+                message,
+                read: false
+              });
+              notifyTheaterAdmin(showtime.theater_chain, {
+                _id: notification._id,
+                bookingId: booking._id,
+                type: 'booking_expiring',
+                message,
+                timestamp: new Date(),
+                read: false
+              });
+            }
+          }
+        }
+      }
+      // Nếu booking pending chưa có payment_proof_url và quá hạn thì tự động expire
+      if (
+        booking.status === 'pending' &&
+        !booking.payment_proof_url &&
+        booking.createdAt &&
+        (now - new Date(booking.createdAt).getTime() > HOLD_TIMEOUT_MS)
+      ) {
+        booking.status = 'expired';
+        await booking.save();
+        // (Tùy chọn) Gửi notification cho user nếu muốn
+      }
+    }
+    // --- END NOTIFY ---
+
     return NextResponse.json(bookings);
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });

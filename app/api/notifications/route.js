@@ -15,3 +15,21 @@ export async function GET(req) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 } 
+
+export async function DELETE(req) {
+  await connectToDatabase();
+  try {
+    const { searchParams } = new URL(req.url);
+    const user_id = searchParams.get('user_id');
+
+    if (!user_id) {
+      return NextResponse.json({ error: 'Missing user_id' }, { status: 400 });
+    }
+
+    await Notification.deleteMany({ user_id });
+
+    return NextResponse.json({ success: true }, { status: 200 });
+  } catch (err) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}

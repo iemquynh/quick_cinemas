@@ -4,6 +4,9 @@ import { useState, useEffect, useRef } from 'react';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { getAuthToken } from '@/utils/auth';
 import { useSearchParams } from 'next/navigation';
+import ChatWidget from '@/components/ChatWidget';
+import { FaRegCommentDots } from 'react-icons/fa';
+import isEqual from 'lodash.isEqual';
 
 export default function AdminBookingsPage() {
   const { user, loading } = useCurrentUser();
@@ -14,12 +17,22 @@ export default function AdminBookingsPage() {
   const searchParams = useSearchParams();
   const highlightId = searchParams.get('highlight');
   const bookingRefs = useRef({});
+  const [chatBooking, setChatBooking] = useState(null);
 
   useEffect(() => {
     if (user && user.role) {
       fetchBookings();
     }
   }, [user, filter]);
+
+  // Polling tự động reload bookings mỗi 1 giây
+  // useEffect(() => {
+  //   if (!user || !user.role) return;
+  //   const interval = setInterval(() => {
+  //     fetchBookings();
+  //   }, 1000);
+  //   return () => clearInterval(interval);
+  // }, [user, filter]);
 
   useEffect(() => {
     if (highlightId && bookingRefs.current[highlightId]) {
@@ -37,7 +50,9 @@ export default function AdminBookingsPage() {
       const response = await fetch(`/api/admin/bookings?${params}`);
       const data = await response.json();
       if (response.ok) {
-        setBookings(data);
+        if (!isEqual(data, bookings)) {
+          setBookings(data);
+        }
       } else {
         console.error('Error fetching bookings:', data.error);
       }
@@ -120,7 +135,8 @@ export default function AdminBookingsPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24 sm:pt-8">
+
       {/* Filter tabs */}
       <div className="mb-6">
         <div className="border-b border-gray-200">
@@ -163,6 +179,7 @@ export default function AdminBookingsPage() {
                 key={booking._id}
                 ref={el => bookingRefs.current[booking._id] = el}
                 className={`px-6 py-4 transition-all duration-300 ${highlightId === booking._id ? 'border-4 border-blue-500 bg-blue-50' : ''}`}
+                style={{ position: 'relative' }}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
@@ -219,11 +236,26 @@ export default function AdminBookingsPage() {
                       </button>
                     </div>
                   )}
+                  {/* Icon chat cho mọi booking */}
+                  <button
+                    title="Chat với user"
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', marginLeft: 12 }}
+                    onClick={() => setChatBooking(booking)}
+                  >
+                    <FaRegCommentDots size={28} color="#2563eb" />
+                  </button>
                 </div>
               </li>
             ))}
           </ul>
         </div>
+      )}
+      {chatBooking && (
+        <ChatWidget
+          booking={chatBooking}
+          user={user}
+          onClose={() => setChatBooking(null)}
+        />
       )}
     </div>
   );

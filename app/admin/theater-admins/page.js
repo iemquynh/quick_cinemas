@@ -40,12 +40,12 @@ export default function TheaterAdminsPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const url = editingAdmin 
+    const url = editingAdmin
       ? `/api/admin/theater-admins/${editingAdmin._id}`
       : '/api/admin/theater-admins';
-    
+
     const method = editingAdmin ? 'PUT' : 'POST';
-    const body = editingAdmin 
+    const body = editingAdmin
       ? { ...form, password: form.password || undefined }
       : form;
 
@@ -80,7 +80,7 @@ export default function TheaterAdminsPage() {
 
   const handleDelete = async (id) => {
     if (!confirm('Bạn có chắc chắn muốn xóa admin này?')) return;
-    
+
     try {
       const res = await fetch(`/api/admin/theater-admins/${id}`, {
         method: 'DELETE'
@@ -103,30 +103,35 @@ export default function TheaterAdminsPage() {
 
   return (
     <SuperAdminGuard>
-      <div className="container mx-auto py-8" style={{marginTop: 55}}>
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-white">Quản lý Admin Rạp</h2>
-          <button 
-            className="btn btn-primary" 
+      <div className="container mx-auto py-8 px-4" style={{ marginTop: 55 }}>
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+          <h2 className="text-2xl font-bold text-white">Theater Admin Management</h2>
+          <button
+            className="btn bg-gray-600 hover:bg-gray-700 text-white w-full md:w-auto"
             onClick={() => setShowForm(true)}
           >
-            Thêm Admin Rạp
+            Add Theater Admin
           </button>
         </div>
 
+        {/* Form */}
         {showForm && (
           <div className="bg-base-200 p-6 rounded mb-6">
             <h3 className="text-xl font-bold mb-4">
               {editingAdmin ? 'Sửa Admin Rạp' : 'Thêm Admin Rạp'}
             </h3>
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <form
+              onSubmit={handleSubmit}
+              className="grid grid-cols-1 md:grid-cols-2 gap-4"
+            >
               <div>
                 <label className="label">Username</label>
                 <input
                   type="text"
                   className="input input-bordered w-full"
                   value={form.username}
-                  onChange={(e) => setForm({...form, username: e.target.value})}
+                  onChange={(e) => setForm({ ...form, username: e.target.value })}
                   required
                 />
               </div>
@@ -136,7 +141,7 @@ export default function TheaterAdminsPage() {
                   type="email"
                   className="input input-bordered w-full"
                   value={form.email}
-                  onChange={(e) => setForm({...form, email: e.target.value})}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
                   required
                 />
               </div>
@@ -148,68 +153,78 @@ export default function TheaterAdminsPage() {
                   type="password"
                   className="input input-bordered w-full"
                   value={form.password}
-                  onChange={(e) => setForm({...form, password: e.target.value})}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
                   required={!editingAdmin}
                 />
               </div>
               <div>
-                <label className="label">Chuỗi Rạp</label>
+                <label className="label">Theater chain</label>
                 <select
                   className="select select-bordered w-full"
                   value={form.theater_chain}
-                  onChange={(e) => setForm({...form, theater_chain: e.target.value})}
+                  onChange={(e) =>
+                    setForm({ ...form, theater_chain: e.target.value })
+                  }
                   required
                 >
-                  <option value="">Chọn chuỗi rạp</option>
-                  {theaterChains.map(chain => (
+                  <option value="">Select theater chain</option>
+                  {theaterChains.map((chain) => (
                     <option key={chain.value} value={chain.value}>
                       {chain.name}
                     </option>
                   ))}
                 </select>
               </div>
-              <div className="md:col-span-2 flex gap-2">
-                <button type="submit" className="btn btn-primary">
-                  {editingAdmin ? 'Cập nhật' : 'Thêm'}
+              <div className="md:col-span-2 flex flex-col sm:flex-row gap-2">
+                <button type="submit" className="btn btn-primary w-full sm:w-auto">
+                  {editingAdmin ? 'Update' : 'Add'}
                 </button>
-                <button type="button" className="btn btn-secondary" onClick={resetForm}>
-                  Hủy
+                <button
+                  type="button"
+                  className="btn bg-gray-500 hover:bg-gray-700 w-full sm:w-auto"
+                  onClick={resetForm}
+                >
+                  Cancel
                 </button>
               </div>
             </form>
           </div>
         )}
 
-        <div className="bg-base-200 rounded">
-          <table className="table w-full">
+        {/* Table */}
+        <div className="bg-base-200 rounded overflow-x-auto">
+          <table className="table w-full table-fixed">
             <thead>
               <tr>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Chuỗi Rạp</th>
-                <th>Thao tác</th>
+                <th className="w-1/4">Username</th>
+                <th className="w-1/3">Email</th>
+                <th className="w-1/4">Chuỗi Rạp</th>
+                <th className="w-1/4">Thao tác</th>
               </tr>
             </thead>
             <tbody>
-              {admins.map(admin => (
-                <tr key={admin._id}>
-                  <td>{admin.username}</td>
-                  <td>{admin.email}</td>
+              {admins.map((admin) => (
+                <tr key={admin._id} className="break-words">
+                  <td className="whitespace-normal break-words">{admin.username}</td>
+                  <td className="whitespace-normal break-words">{admin.email}</td>
                   <td>{admin.theater_chain || 'N/A'}</td>
                   <td>
-                    <button 
-                      className="btn btn-sm btn-info mr-2"
-                      onClick={() => handleEdit(admin)}
-                    >
-                      Sửa
-                    </button>
-                    <button 
-                      className="btn btn-sm btn-error"
-                      onClick={() => handleDelete(admin._id)}
-                    >
-                      Xóa
-                    </button>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        className="flex-1 px-4 py-1 rounded bg-gray-600 text-white hover:bg-gray-700 transition text-sm"
+                        onClick={() => handleEdit(admin)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="flex-1 px-4 py-1 rounded bg-red-500 text-white hover:bg-red-700 transition text-sm"
+                        onClick={() => handleDelete(admin._id)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </td>
+
                 </tr>
               ))}
             </tbody>
@@ -217,5 +232,7 @@ export default function TheaterAdminsPage() {
         </div>
       </div>
     </SuperAdminGuard>
+
+
   );
 } 

@@ -1,9 +1,9 @@
 import MovieDetailClient from '../../../components/MovieDetailClient.js';
 import { AdminProvider } from '@/hooks/useCurrentUser';
 
-export default async function MoviePage({ params }) {
-  const awaitedParams = await params;
-  const movieId = awaitedParams.id;
+export default async function MoviePage({ params, searchParams }) {
+  const movieId = params.id;
+  const showtimeId = searchParams?.showtimeId || null;
 
   // Gọi API để lấy dữ liệu phim
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
@@ -29,7 +29,6 @@ export default async function MoviePage({ params }) {
   }
 
   // Lấy danh sách phim liên quan trực tiếp từ DB
-  // (Chỉ chạy được trên server, cần import Movie model và connectToDatabase)
   const Movie = (await import('../../../models/Movie')).default;
   const { connectToDatabase } = await import('../../../lib/mongodb');
   await connectToDatabase();
@@ -56,10 +55,6 @@ export default async function MoviePage({ params }) {
     { $sort: { matchCount: -1 } },
     { $limit: 4 }
   ]);
-  console.log('relatedMovies count:', relatedMovies.length);
-  console.log('relatedMovies titles:', relatedMovies.map(m => m.title));
-  console.log('Current movieId:', movieId);
-  console.log('relatedMovies ids:', relatedMovies.map(m => m._id));
 
   function serializeMovie(m) {
     return {
@@ -73,12 +68,13 @@ export default async function MoviePage({ params }) {
 
   // Bọc MovieDetailClient trong AdminProvider
   return (
-    <AdminProvider>
+    // <AdminProvider>
       <MovieDetailClient
         movieData={result.data}
         movieId={movieId}
         relatedMovies={relatedMoviesSerialized}
+        showtimeId={showtimeId}
       />
-    </AdminProvider>
+    // </AdminProvider>
   );
 }
