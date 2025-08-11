@@ -89,12 +89,12 @@ export default function TheaterListPage() {
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-6 px-2 sm:px-0 mt-5">
           <h2 className="text-lg sm:text-2xl font-bold text-white whitespace-nowrap">Theater Lists</h2>
-          <a
+          <Link
             href="/admin/theaters/create"
             className="btn btn-primary btn-sm sm:btn-md text-sm sm:text-base whitespace-nowrap"
           >
             Add Theater
-          </a>
+          </Link>
         </div>
 
 

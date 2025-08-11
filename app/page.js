@@ -18,8 +18,42 @@ export default function Home() {
   const [filter, setFilter] = useState('now-showing');
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const [promotions, setPromotions] = useState([]);
+  const [loadingPromotions, setLoadingPromotions] = useState(true);
 
   const today = dayjs().startOf('day');
+
+  useEffect(() => {
+    console.log("useEffect promotions chạy");
+    const fetchPromotions = async () => {
+      console.log("fetchPromotions bắt đầu");
+      try {
+        const token = localStorage.getItem("auth-token");
+        const headers = {};
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+        console.log("Headers gửi đi:", headers);
+
+        const res = await fetch("/api/promotions", { headers });
+        console.log("Response object:", res);
+
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+        const data = await res.json();
+        console.log("Promotions data:", data);
+
+        setPromotions(data);
+      } catch (err) {
+        console.error("Failed to fetch promotions:", err);
+      } finally {
+        setLoadingPromotions(false);
+      }
+    };
+
+    fetchPromotions();
+  }, []);
+
 
   useEffect(() => {
     fetch('/api/movies')
@@ -45,52 +79,56 @@ export default function Home() {
       : releaseDate.isAfter(today);
   });
 
+  // useEffect(() => {
+  //   console.log("useEffect promotions chạy");
+  //   const fetchPromotions = async () => {
+  //     console.log("fetchPromotions bắt đầu");
+  //     try {
+  //       const token = localStorage.getItem("auth-token");
+  //       const headers = {};
+  //       if (token) {
+  //         headers["Authorization"] = `Bearer ${token}`;
+  //       }
+
+  //       const res = await fetch("/api/promotions", { headers });
+  //       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+  //       const data = await res.json();
+  //       setPromotions(data);
+  //     } catch (err) {
+  //       console.error("Failed to fetch promotions:", err);
+  //     } finally {
+  //       setLoadingPromotions(false);
+  //     }
+  //   };
+
+  //   fetchPromotions();
+  // }, []);
+
+
   return (
     <>
       <div className="min-h-full">
         <Header />
 
         <main className="overflow-auto bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900" style={{ marginTop: '4rem', maxHeight: 'calc(100vh - 4rem)' }}>
-          <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8" style={{ background: 'linear-gradient(90deg, rgba(59,130,246,0.2) 0%, rgba(173,176,181,0.8) 100%)' }}>
-            <div className="carousel w-full">
-              <div id="slide1" className="carousel-item relative w-full">
-                <img
-                  src="https://img.daisyui.com/images/stock/photo-1625726411847-8cbb60cc71e6.webp"
-                  className="w-full" />
-                <div className="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
-                  <a href="#slide4" className="btn btn-circle">❮</a>
-                  <a href="#slide2" className="btn btn-circle">❯</a>
+          <div className="px-4 bg-[#0a1a2f]">
+            <div className="carousel rounded-xl overflow-x-auto w-full space-x-4 p-4 snap-x snap-mandatory pl-6">
+              {promotions.map((promo) => (
+                <div
+                  key={promo._id}
+                  className="carousel-item flex-shrink-0 snap-start flex justify-center"
+                >
+                  <img
+                    src={promo.img_url}
+                    alt={promo.title}
+                    className="max-w-[600px] max-h-[400px] object-contain rounded-xl"
+                  />
                 </div>
-              </div>
-              <div id="slide2" className="carousel-item relative w-full">
-                <img
-                  src="https://img.daisyui.com/images/stock/photo-1609621838510-5ad474b7d25d.webp"
-                  className="w-full" />
-                <div className="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
-                  <a href="#slide1" className="btn btn-circle">❮</a>
-                  <a href="#slide3" className="btn btn-circle">❯</a>
-                </div>
-              </div>
-              <div id="slide3" className="carousel-item relative w-full">
-                <img
-                  src="https://img.daisyui.com/images/stock/photo-1414694762283-acccc27bca85.webp"
-                  className="w-full" />
-                <div className="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
-                  <a href="#slide2" className="btn btn-circle">❮</a>
-                  <a href="#slide4" className="btn btn-circle">❯</a>
-                </div>
-              </div>
-              <div id="slide4" className="carousel-item relative w-full">
-                <img
-                  src="https://img.daisyui.com/images/stock/photo-1665553365602-b2fb8e5d1707.webp"
-                  className="w-full" />
-                <div className="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
-                  <a href="#slide3" className="btn btn-circle">❮</a>
-                  <a href="#slide1" className="btn btn-circle">❯</a>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
+
 
           <div className="w-full bg-[#0a1a2f] py-8 pt-16">
             <div className="flex flex-col items-center mb-8">
@@ -129,7 +167,7 @@ export default function Home() {
             </div>
           </div>
 
-          
+
           {/* <div className="w-full bg-[#0a1a2f] py-8">
           <hr className="my-8" />
             <div className="min-h-screen px-6 py-10 text-white ">
@@ -176,31 +214,31 @@ export default function Home() {
           </div> */}
 
           <section className="bg-[#0a1a2f] py-12 pt-16">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-white">
-              {filter === 'now-showing' ? 'NOW SHOWING' : 'COMING SOON'}
-            </h2>
-            <div className="h-1 w-24 bg-blue-400 mx-auto mt-2 rounded-full" />
-          </div>
-          <div className="flex justify-center gap-6 mb-8">
-            <button onClick={() => setFilter('now-showing')} className={`text-lg font-medium ${filter === 'now-showing' ? 'text-white' : 'text-gray-400'} hover:text-gray-200`}>Now Showing</button>
-            <button onClick={() => setFilter('coming-soon')} className={`text-lg font-medium ${filter === 'coming-soon' ? 'text-white' : 'text-gray-400'} hover:text-gray-200`}>Coming Soon</button>
-          </div>
-          <div className="flex flex-wrap justify-center gap-6 px-6">
-            {filteredMovies.map((movie) => (
-              <Link key={movie._id} href={`/movies/${movie._id}`} className="w-40 sm:w-48">
-                <div className="bg-[#152d45] rounded-xl overflow-hidden shadow hover:shadow-xl">
-                  <img src={movie.poster || '/default-poster.jpg'} alt={movie.title} className="w-full h-60 object-cover" />
-                  <div className="p-3 text-center text-white font-semibold truncate">{movie.title}</div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-white">
+                {filter === 'now-showing' ? 'NOW SHOWING' : 'COMING SOON'}
+              </h2>
+              <div className="h-1 w-24 bg-blue-400 mx-auto mt-2 rounded-full" />
+            </div>
+            <div className="flex justify-center gap-6 mb-8">
+              <button onClick={() => setFilter('now-showing')} className={`text-lg font-medium ${filter === 'now-showing' ? 'text-white' : 'text-gray-400'} hover:text-gray-200`}>Now Showing</button>
+              <button onClick={() => setFilter('coming-soon')} className={`text-lg font-medium ${filter === 'coming-soon' ? 'text-white' : 'text-gray-400'} hover:text-gray-200`}>Coming Soon</button>
+            </div>
+            <div className="flex flex-wrap justify-center gap-6 px-6">
+              {filteredMovies.map((movie) => (
+                <Link key={movie._id} href={`/movies/${movie._id}`} className="w-40 sm:w-48">
+                  <div className="bg-[#152d45] rounded-xl overflow-hidden shadow hover:shadow-xl">
+                    <img src={movie.poster || '/default-poster.jpg'} alt={movie.title} className="w-full h-60 object-cover" />
+                    <div className="p-3 text-center text-white font-semibold truncate">{movie.title}</div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
 
           <div className="w-full bg-[#0a1a2f] py-8 pt-16">
             <div className="flex flex-col items-center mb-8">
-              <h2 className="text-3xl font-bold text-white tracking-widest text-center">SNACK SMARTER - SAVE MORE</h2> 
+              <h2 className="text-3xl font-bold text-white tracking-widest text-center">SNACK SMARTER - SAVE MORE</h2>
               <div className="w-24 h-1 bg-[#4fd1ff] mt-2 rounded"></div>
             </div>
             <div className="flex flex-wrap justify-center gap-6">
@@ -244,38 +282,38 @@ export default function Home() {
           </div>
 
           <div className="w-full bg-[#0a1a2f] py-8">
-          <section className="py-16 text-white">
-            <div className="max-w-6xl mx-auto px-6 md:px-8 grid md:grid-cols-2 gap-10 items-center">
+            <section className="py-16 text-white">
+              <div className="max-w-6xl mx-auto px-6 md:px-8 grid md:grid-cols-2 gap-10 items-center">
 
-              {/* Hình ảnh bên trái */}
-              <div className="flex justify-center">
-                <div className="bg-white/10 p-6 rounded-2xl shadow-lg">
-                  <img
-                    src="https://www.shutterstock.com/image-vector/vector-illustration-happy-kids-going-260nw-201747179.jpg"  // <- Đổi tên file thành banner-cinema.png
-                    alt="Xem phim cùng gia đình"
-                    className="w-72 md:w-80 h-auto object-contain"
-                  />
+                {/* Hình ảnh bên trái */}
+                <div className="flex justify-center">
+                  <div className="bg-white/10 p-6 rounded-2xl shadow-lg">
+                    <img
+                      src="https://www.shutterstock.com/image-vector/vector-illustration-happy-kids-going-260nw-201747179.jpg"  // <- Đổi tên file thành banner-cinema.png
+                      alt="Xem phim cùng gia đình"
+                      className="w-72 md:w-80 h-auto object-contain"
+                    />
+                  </div>
+                </div>
+
+                {/* Nội dung bên phải */}
+                <div>
+                  <h2 className="text-3xl md:text-4xl font-bold leading-snug mb-4">
+                    Book Movie Tickets Online –<br className="hidden md:block" />
+                    An Easy Experience
+                  </h2>
+                  <p className="text-lg text-gray-200 mb-6">
+                    Instead of waiting in line at the cinema, you can easily select movies, showtimes, and seats right from home. Our constantly updated system ensures you never miss any exciting screenings.
+                  </p>
+
+                  <button onClick={() => router.push('/films')} className="bg-white text-[#1e2b7a] font-semibold px-6 py-3 rounded-xl hover:bg-gray-100 transition">
+                    Watch Hot Movies
+                  </button>
                 </div>
               </div>
-
-              {/* Nội dung bên phải */}
-              <div>
-                <h2 className="text-3xl md:text-4xl font-bold leading-snug mb-4">
-                  Book Movie Tickets Online –<br className="hidden md:block" />
-                  An Easy Experience
-                </h2>
-                <p className="text-lg text-gray-200 mb-6">
-                  Instead of waiting in line at the cinema, you can easily select movies, showtimes, and seats right from home. Our constantly updated system ensures you never miss any exciting screenings.
-                </p>
-
-                <button onClick={() => router.push('/films')} className="bg-white text-[#1e2b7a] font-semibold px-6 py-3 rounded-xl hover:bg-gray-100 transition">
-                  Watch Hot Movies
-                </button>
-              </div>
-            </div>
-          </section>
+            </section>
           </div>
-          
+
 
 
           <SiteFooter />

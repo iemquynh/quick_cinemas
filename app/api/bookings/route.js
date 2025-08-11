@@ -8,6 +8,7 @@ import { connectToDatabase } from '@/lib/mongodb';
 import { notifyTheaterAdmin, notifyUser } from '@/lib/socket';
 import { getAuth } from '@/utils/auth';
 import { ticketPrices } from '@/config/ticketPrices';
+import Promotion from '@/models/Promotion';
 
 // Hàm tính tổng tiền giống FE
 function getSeatPrice(theaterChain, screenType, seatType) {
@@ -64,7 +65,40 @@ export async function POST(req) {
     }
     const total = seatTotal + comboTotal;
 
-    // API này không cần cập nhật ghế nữa, chỉ tạo booking
+    // Sau khi tính total:
+
+    let discountAmount = 0;
+    if (body.promotion_id) {
+      // Lấy promotion từ DB
+      const promo = await Promotion.findById(body.promotion_id);
+
+      if (promo) {
+        // Kiểm tra điều kiện áp dụng mã
+        const now = new Date();
+        const startDate = promo.start_date ? new Date(promo.start_date) : null;
+        const endDate = promo.end_date ? new Date(promo.end_date) : null;
+        if (
+          promo.active !== false &&
+          (startDate === null || now >= startDate) &&
+          (endDate === null || now <= endDate) &&
+          (promo.max_usage === null || promo.used_count < promo.max_usage) &&
+          total >= (promo.minimum_order_amount || 0)
+        ) {
+          if (promo.discount_type === "percentage") {
+            discountAmount = total * (promo.discount_value / 100);
+          } else if (promo.discount_type === "fixed") {
+            discountAmount = promo.discount_value;
+          }
+          if (promo.maximum_discount_amount !== null && promo.maximum_discount_amount !== undefined) {
+            discountAmount = Math.min(discountAmount, promo.maximum_discount_amount);
+          }
+          discountAmount = Math.max(0, Math.min(discountAmount, total));
+        }
+      }
+    }
+
+    const finalPrice = total - discountAmount;
+
     const booking = new Booking({
       user_id: userId,
       showtime_id: body.showtime_id,
@@ -73,19 +107,22 @@ export async function POST(req) {
       payment_proof_url: body.payment_proof_url,
       status: 'pending',
       total: total,
+      final_price: finalPrice,
+      promotion_id: body.promotion_id || null,
     });
     await booking.save();
+
 
     // Gửi và lưu notification
     const admins = await User.find({ role: 'theater_admin', theater_chain: showtime.theater_chain });
     const notificationData = {
-        bookingId: booking._id,
-        showtimeId: showtime._id,
-        theaterChain: showtime.theater_chain,
-        message: `Có vé mới đang chờ xác nhận cho suất chiếu ${showtime._id}`,
-        timestamp: new Date(),
-        seats: body.seats,
-        userInfo: { userId: userId }
+      bookingId: booking._id,
+      showtimeId: showtime._id,
+      theaterChain: showtime.theater_chain,
+      message: `Có vé mới đang chờ xác nhận cho suất chiếu ${showtime._id}`,
+      timestamp: new Date(),
+      seats: body.seats,
+      userInfo: { userId: userId }
     };
     notifyTheaterAdmin(showtime.theater_chain, notificationData);
     notifyUser(userId, notificationData);

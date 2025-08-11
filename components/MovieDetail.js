@@ -6,6 +6,7 @@ import AdminGuard from '@/components/AdminGuard';
 import MovieComments from '../app/movies/[id]/MovieComments';
 import SiteFooter from "./SiteFooter";
 import { useSearchParams, useRouter } from 'next/navigation';
+import Link from "next/link";
 
 function getYouTubeId(url) {
   const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
@@ -255,9 +256,9 @@ function ShowtimesGrid({ movieId, date, theaterSearch }) {
                 </div>
               </div>
               {/* Nút Book Now nằm ngang bên dưới, full width,bo góc phải dưới, màu xanh dương, font bold */}
-              <a href={`/book/${s._id}`} className="absolute left-0 right-0 bottom-0 h-6 bg-blue-600 hover:bg-blue-700 text-white font-bold flex items-center justify-center rounded-br-lg transition z-20">
+              <Link href={`/book/${s._id}`} className="absolute left-0 right-0 bottom-0 h-6 bg-blue-600 hover:bg-blue-700 text-white font-bold flex items-center justify-center rounded-br-lg transition z-20">
                 Book Now
-              </a>
+              </Link>
             </div>
           ))
         )}
@@ -319,12 +320,12 @@ export default function MovieDetail({
                   </span>
                 </div>
                 <div className="flex items-center space-x-2 mt-2 sm:mt-0">
-                  <a
+                  <Link
                     href="/admin/dashboard"
                     className="text-gray-300 hover:text-white text-sm px-3 py-1 rounded border border-gray-600"
                   >
                     Dashboard
-                  </a>
+                  </Link>
                   <button
                     onClick={user.logout}
                     className="text-gray-300 hover:text-white text-sm px-3 py-1 rounded border border-gray-600"
@@ -515,12 +516,12 @@ export default function MovieDetail({
                       />
                       <div className="text-white font-semibold text-lg text-center mb-1 truncate w-full">{m.title}</div>
                       <div className="text-gray-400 text-sm text-center mb-2 truncate w-full">{m.genre}</div>
-                      <a
+                      <Link
                         href={`/movies/${id}`}
                         className="mt-auto px-4 py-1 bg-sky-700 text-white rounded-full text-xs font-bold hover:bg-sky-500 transition"
                       >
                         View
-                      </a>
+                      </Link>
                     </div>
                   );
                 })}

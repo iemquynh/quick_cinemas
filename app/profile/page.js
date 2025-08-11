@@ -192,6 +192,7 @@ import Header from '../../components/Header';
 import styles from '../auth/register/Register.module.css';
 import Select from "react-select";
 import { FiEye, FiEyeOff, FiX, FiArrowRight } from "react-icons/fi";
+import Link from 'next/link';
 
 const GENRE_OPTIONS = [
   { value: "Action", label: "Action" },
@@ -433,7 +434,7 @@ export default function ProfilePage() {
                 <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-full" onClick={() => { setEditMode(true); setForm(user); setError(''); setMessage(''); }}>Edit Profile</button>
                 <button className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-full" onClick={() => { setChangePwMode(true); setError(''); setMessage(''); }}>Change Password</button>
                 {user.role === true && (
-                  <a href="/admin/movies" className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-full">Admin Panel</a>
+                  <Link href="/admin/movies" className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-full">Admin Panel</Link>
                 )}
               </div>
             </div>

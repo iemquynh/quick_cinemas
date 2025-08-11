@@ -7,6 +7,7 @@ import { useSearchParams } from 'next/navigation';
 import ChatWidget from '@/components/ChatWidget';
 import { FaRegCommentDots } from 'react-icons/fa';
 import isEqual from 'lodash.isEqual';
+import Link from 'next/link.js';
 
 export default function AdminBookingsPage() {
   const { user, loading } = useCurrentUser();
@@ -145,11 +146,10 @@ export default function AdminBookingsPage() {
               <button
                 key={status}
                 onClick={() => setFilter(status)}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  filter === status
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${filter === status
                     ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
+                  }`}
               >
                 {status === 'pending' && 'Chờ xác nhận'}
                 {status === 'using' && 'Đã xác nhận'}
@@ -176,12 +176,13 @@ export default function AdminBookingsPage() {
           <ul className="divide-y divide-gray-200">
             {bookings.map((booking) => (
               <li
-                key={booking._id}
-                ref={el => bookingRefs.current[booking._id] = el}
-                className={`px-6 py-4 transition-all duration-300 ${highlightId === booking._id ? 'border-4 border-blue-500 bg-blue-50' : ''}`}
-                style={{ position: 'relative' }}
-              >
-                <div className="flex items-center justify-between">
+              key={booking._id}
+              ref={el => bookingRefs.current[booking._id] = el}
+              className={`px-6 py-4 transition-all duration-300 ${highlightId === booking._id ? 'border-4 border-blue-500 bg-blue-50' : ''}`}
+              style={{ position: 'relative' }}
+            >
+              <div className="flex flex-col space-y-2">
+                <div className="flex items-start justify-between">
                   <div className="flex items-center space-x-4">
                     {/* Movie poster */}
                     {booking.showtime_id?.movie_id?.poster && (
@@ -204,48 +205,55 @@ export default function AdminBookingsPage() {
                         <p><strong>Seats:</strong> {booking.seats?.map(s => s.seat_id).join(', ')}</p>
                         <p><strong>Showtime:</strong> {formatDate(booking.showtime_id?.time)}</p>
                         <p><strong>Created:</strong> {formatDate(booking.createdAt)}</p>
+                        <p><strong>Final total:</strong> {booking.final_price}</p>
                         {booking.payment_proof_url && (
-                          <p><strong>Payment Proof:</strong> 
-                            <a 
-                              href={booking.payment_proof_url} 
-                              target="_blank" 
+                          <p><strong>Payment Proof:</strong>
+                            <Link
+                              href={booking.payment_proof_url}
+                              target="_blank"
                               rel="noopener noreferrer"
                               className="text-blue-600 hover:text-blue-800 ml-1"
                             >
                               View
-                            </a>
+                            </Link>
                           </p>
                         )}
                       </div>
                     </div>
                   </div>
-                  {/* Action buttons */}
-                  {booking.status === 'pending' && (
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => handleBookingAction(booking._id, 'confirm')}
-                        className="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
-                      >
-                        Xác nhận
-                      </button>
-                      <button
-                        onClick={() => handleBookingAction(booking._id, 'reject')}
-                        className="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-                      >
-                        Từ chối
-                      </button>
-                    </div>
-                  )}
-                  {/* Icon chat cho mọi booking */}
-                  <button
-                    title="Chat với user"
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', marginLeft: 12 }}
-                    onClick={() => setChatBooking(booking)}
-                  >
-                    <FaRegCommentDots size={28} color="#2563eb" />
-                  </button>
+            
+                  {/* Right side buttons + chat in column */}
+                  <div className="flex flex-col items-end space-y-2">
+                    {booking.status === 'pending' && (
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleBookingAction(booking._id, 'confirm')}
+                          className="bg-gray-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                        >
+                          Xác nhận
+                        </button>
+                        <button
+                          onClick={() => handleBookingAction(booking._id, 'reject')}
+                          className="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                        >
+                          Từ chối
+                        </button>
+                      </div>
+                      
+                    )}
+            
+                    <button
+                      title="Chat với user"
+                      style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+                      onClick={() => setChatBooking(booking)}
+                    >
+                      <FaRegCommentDots size={28} color="#2563eb" />
+                    </button>
+                  </div>
                 </div>
-              </li>
+              </div>
+            </li>
+            
             ))}
           </ul>
         </div>

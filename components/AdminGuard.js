@@ -6,6 +6,7 @@ import { useSocket } from '@/hooks/useSocket';
 import { getAuthToken } from '@/utils/auth';
 import ChatWidget from './ChatWidget';
 import NotificationBell from './NotificationBell.js';
+import Link from 'next/link';
 
 export default function AdminGuard({ children, headerOnly }) {
   const { isAdmin, user, loading, logout, hasChecked } = useAdmin();
@@ -171,12 +172,12 @@ export default function AdminGuard({ children, headerOnly }) {
             <div className="flex flex-wrap gap-2 items-center">
               {user?.role === 'theater_admin' && (
                 <>
-                  <a
+                  <Link
                     href="/admin/dashboard"
                     className="text-gray-300 hover:text-white text-xs sm:text-sm px-2 sm:px-3 py-1 rounded border border-gray-600"
                   >
                     Dashboard
-                  </a>
+                  </Link>
   
                   <NotificationBell
                     token={token}
@@ -188,28 +189,28 @@ export default function AdminGuard({ children, headerOnly }) {
   
               {user?.role === 'super_admin' && (
                 <>
-                  <a
+                  <Link
                     href="/admin/theater-admins"
                     className="text-gray-300 hover:text-white text-xs sm:text-sm px-2 sm:px-3 py-1 rounded border border-gray-600"
                   >
                     Manage Theater Admins
-                  </a>
-                  <a
+                  </Link>
+                  <Link
                     href="/admin/movies"
                     className="text-gray-300 hover:text-white text-xs sm:text-sm px-2 sm:px-3 py-1 rounded border border-gray-600"
                   >
                     Manage Movies
-                  </a>
+                  </Link>
                 </>
               )}
   
               {(user?.role !== 'super_admin' && user?.role !== 'theater_admin') && (
-                <a
+                <Link
                   href="/"
                   className="text-gray-300 hover:text-white text-xs sm:text-sm px-2 sm:px-3 py-1 rounded border border-gray-600"
                 >
                   View Site
-                </a>
+                </Link>
               )}
   
               <button
@@ -257,35 +258,35 @@ export default function AdminGuard({ children, headerOnly }) {
               )}
               {user?.role === 'super_admin' && (
                 <>
-                  <a
+                  <Link
                     href="/admin/theater-admins"
                     className="text-gray-300 hover:text-white text-xs sm:text-sm px-2 sm:px-3 py-1 rounded border border-gray-600"
                   >
                     Manage Theater Admins
-                  </a>
-                  <a
+                  </Link>
+                  <Link
                     href="/admin/movies"
                     className="text-gray-300 hover:text-white text-xs sm:text-sm px-2 sm:px-3 py-1 rounded border border-gray-600"
                   >
                     Manage Movies
-                  </a>
+                  </Link>
                 </>
               )}
               {user?.role === 'theater_admin' && (
-                <a
+                <Link
                   href="/admin/dashboard"
                   className="text-gray-300 hover:text-white text-xs sm:text-sm px-2 sm:px-3 py-1 rounded border border-gray-600"
                 >
                   Dashboard
-                </a>
+                </Link>
               )}
               {(user?.role !== 'super_admin' && user?.role !== 'theater_admin') && (
-                <a
+                <Link
                   href="/"
                   className="text-gray-300 hover:text-white text-xs sm:text-sm px-2 sm:px-3 py-1 rounded border border-gray-600"
                 >
                   View Site
-                </a>
+                </Link>
               )}
               <button
                 onClick={logout}

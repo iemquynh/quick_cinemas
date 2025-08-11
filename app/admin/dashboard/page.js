@@ -132,6 +132,11 @@ export default function TheaterAdminPage() {
             <h3 className="text-lg font-semibold mb-2">Manage Bookings</h3>
             <p className="text-red-200 text-sm">Confirm pending bookings</p>
           </Link>
+
+          <Link href="/admin/promotions" className="bg-orange-600 hover:bg-orange-700 text-white p-6 rounded-lg text-center transition-colors">
+            <h3 className="text-lg font-semibold mb-2">Manage Promotions</h3>
+            <p className="text-red-200 text-sm">Create and manage promotions</p>
+          </Link>
         </div>
       </div>
     </div>

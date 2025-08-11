@@ -8,6 +8,7 @@ import { getAuthToken } from '@/utils/auth.js';
 import { io } from 'socket.io-client';
 import ChatWidget from './ChatWidget';
 import { usePathname } from 'next/navigation';
+import Link from 'next/link.js';
 
 
 const navigation = [
@@ -159,7 +160,7 @@ export default function Header() {
                   {navigation.map((item) => {
                     const isActive = pathname === item.href;
                     return (
-                      <a
+                      <Link
                         key={item.name}
                         href={item.href}
                         aria-current={isActive ? 'page' : undefined}
@@ -171,7 +172,7 @@ export default function Header() {
                         )}
                       >
                         {item.name}
-                      </a>
+                      </Link>
                     );
                   })}
                 </div>
@@ -288,8 +289,8 @@ export default function Header() {
                   <details className="dropdown">
                     <summary className="btn m-1">Join Us</summary>
                     <ul className="menu dropdown-content bg-base-100 rounded-box z-1 w-42 p-2 shadow-sm">
-                      <li><a href="/auth/login">Login</a></li>
-                      <li><a href="/auth/register">Register</a></li>
+                      <li><Link href="/auth/login">Login</Link></li>
+                      <li><Link href="/auth/register">Register</Link></li>
                     </ul>
                   </details>
                 )}
@@ -308,9 +309,9 @@ export default function Header() {
                     </button>
                     {showMenu && (
                       <div className="dropdown-content absolute right-0 mt-2 menu bg-gray-100 rounded-box z-1 w-35 p-2 shadow-sm">
-                        <a href="/profile" className="block px-4 py-2 text-gray-800 hover:bg-gray-400">Profile</a>
+                        <Link href="/profile" className="block px-4 py-2 text-gray-800 hover:bg-gray-400">Profile</Link>
                         {user && user.role === true && (
-                          <a href="/admin/movies" className="block px-4 py-2 text-gray-800 hover:bg-gray-400">Manage</a>
+                          <Link href="/admin/movies" className="block px-4 py-2 text-gray-800 hover:bg-gray-400">Manage</Link>
                         )}
                         <button
                           className="w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-400"
@@ -444,8 +445,8 @@ export default function Header() {
                 <details className="dropdown">
                   <summary className="btn m-1">Join Us</summary>
                   <ul className="menu dropdown-content bg-base-100 rounded-box z-1 w-42 p-2 shadow-sm">
-                    <li><a href="/auth/login">Login</a></li>
-                    <li><a href="/auth/register">Register</a></li>
+                    <li><Link href="/auth/login">Login</Link></li>
+                    <li><Link href="/auth/register">Register</Link></li>
                   </ul>
                 </details>
               )}
@@ -464,7 +465,7 @@ export default function Header() {
                   </button>
                   {showMenu && (
                     <div className="dropdown-content absolute right-0 mt-2 menu bg-gray-100 rounded-box z-1 w-35 p-2 shadow-sm">
-                      <a href="/profile" className="block px-4 py-2 text-gray-800 hover:bg-gray-400">Profile</a>
+                      <Link href="/profile" className="block px-4 py-2 text-gray-800 hover:bg-gray-400">Profile</Link>
                       <button
                         className="w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-400"
                         onClick={() => {
@@ -494,7 +495,7 @@ export default function Header() {
             {navigation.map((item) => {
               const isActive = pathname === item.href;
               return (
-                <a
+                <Link
                   key={item.name}
                   href={item.href}
                   aria-current={isActive ? 'page' : undefined}
@@ -506,7 +507,7 @@ export default function Header() {
                   )}
                 >
                   {item.name}
-                </a>
+                </Link>
               );
             })}
           </div>

@@ -6,6 +6,7 @@ import User from '@/models/User';
 import Notification from '@/models/Notification';
 import { connectToDatabase } from '@/lib/mongodb';
 import { notifyTheaterAdmin, notifyUser } from '@/lib/socket';
+import Promotion from '@/models/Promotion';
 
 export async function GET(req) {
   await connectToDatabase();
@@ -143,7 +144,12 @@ export async function PATCH(req) {
                 seatInLayout.pending_time = null;
             }
         }
+        // --- Tăng used_count nếu có promotion_id ---
+        if (booking.promotion_id) {
+          await Promotion.findByIdAndUpdate(booking.promotion_id, { $inc: { used_count: 1 } });
+        }
         break;
+
       case 'reject':
         newStatus = 'cancel';
         notificationType = 'booking_cancelled';
@@ -158,7 +164,9 @@ export async function PATCH(req) {
                 seatInLayout.pending_time = null;
             }
         }
+        // Không cập nhật used_count khi hủy vé
         break;
+
       default:
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
@@ -194,4 +202,4 @@ export async function PATCH(req) {
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
-} 
+}

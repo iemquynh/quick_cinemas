@@ -324,6 +324,7 @@ export default function MyTicketsPage() {
                         <div><span className="font-semibold">Showtime:</span> {showtime?.time ? new Date(showtime.time).toLocaleString() : 'Không rõ'}</div>
                         <div><span className="font-semibold">Seat:</span> {b.seats.map(s => `${s.seat_id}${s.type ? ` (${s.type})` : ''}`).join(", ")}</div>
                         <div><span className="font-semibold">Total:</span> {b.total}</div>
+                        <div><span className="font-semibold">Final Total:</span> {b.final_price}</div>
                         {b.combos && Object.keys(b.combos).length > 0 && (
                           <div>
                             <span className="font-semibold">Combo:</span> {

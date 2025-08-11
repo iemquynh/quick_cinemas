@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function AuthGuard({ children }) {
   const router = useRouter();
@@ -74,12 +75,12 @@ export default function AuthGuard({ children }) {
               )}
             </div>
             <div className="flex items-center space-x-4">
-              <a 
+              <Link 
                 href={user?.role === 'super_admin' ? '/admin/theater-admins' : '/'}
                 className="text-gray-300 hover:text-white text-sm"
               >
                 Home
-              </a>
+              </Link>
               <button
                 onClick={() => {
                   // Xóa localStorage và redirect

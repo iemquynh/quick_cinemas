@@ -1,5 +1,6 @@
 import { Facebook, Instagram, Twitter, Mail, MapPin, Phone } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function SiteFooter() {
   return (
@@ -29,8 +30,8 @@ export default function SiteFooter() {
             <div className="space-y-2">
               <h3 className="text-base font-semibold mb-2">Abouts</h3>
               <ul className="space-y-1 text-gray-400">
-                <li><a href="/about" className="hover:text-gray-300">About</a></li>
-                <li><a href="/about" className="hover:text-gray-300">Terms & Conditions</a></li>
+                <li><Link href="/about" className="hover:text-gray-300">About</Link></li>
+                <li><Link href="/about" className="hover:text-gray-300">Terms & Conditions</Link></li>
               </ul>
             </div>
 

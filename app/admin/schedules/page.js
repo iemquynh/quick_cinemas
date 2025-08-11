@@ -62,25 +62,25 @@ export default function ScheduleListPage() {
       {/* Header title + button */}
       <div className="flex items-center justify-between mb-4 px-2 sm:px-0">
         <h2 className="text-lg sm:text-2xl font-bold text-white whitespace-nowrap">Schedule Lists</h2>
-        <a
+        <Link
           href="/admin/schedules/create"
           className="btn btn-primary btn-sm sm:btn-md text-sm sm:text-base whitespace-nowrap"
         >
           Add Schedule
-        </a>
+        </Link>
       </div>
 
       {/* Filter Inputs */}
       <div className="flex gap-2 flex-wrap mb-6">
         <input
           className="input input-bordered input-sm w-full sm:w-auto"
-          placeholder="Lọc theo tên phim"
+          placeholder="Filter by title"
           value={filterMovie}
           onChange={e => setFilterMovie(e.target.value)}
         />
         <input
           className="input input-bordered input-sm w-full sm:w-auto"
-          placeholder="Lọc theo tên rạp"
+          placeholder="Filter by theater"
           value={filterTheater}
           onChange={e => setFilterTheater(e.target.value)}
         />

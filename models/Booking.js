@@ -13,6 +13,16 @@ const BookingSchema = new mongoose.Schema({
     payment_proof_url: { type: String },
     status: { type: String, enum: ['pending', 'using', 'cancel', 'expired'], default: 'pending' },
     total: { type: Number }, 
+    promotion_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Promotion',
+      default: null,
+    },
+    
+    final_price: {
+      type: Number,
+      required: true,
+    }    
 }, {
     timestamps: true
 })
