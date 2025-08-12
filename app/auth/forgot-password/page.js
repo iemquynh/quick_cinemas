@@ -3,8 +3,11 @@ import React, { useState } from "react";
 import styles from "../login/SignIn.module.css"; // Dùng lại style của login
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import style from "./ForgotPassword.module.css";
+import Swal from "sweetalert2";
+import { useRouter } from "next/navigation";
 
 export default function ForgotPassword() {
+  const router = useRouter();
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [form, setForm] = useState({
@@ -22,14 +25,33 @@ export default function ForgotPassword() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (form.newPassword !== form.confirm) {
-      setError("Passwords do not match!");
-      setSuccess("");
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Passwords do not match!",
+        timer: 2500,
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+      });
       return;
-    }
-    setError("");
-    setSuccess("Password reset successfully!");
-    // Xử lý gửi dữ liệu ở đây
-  };
+    };
+
+    Swal.fire({
+      icon: "success",
+      title: "Password reset successfully!",
+      timer: 2000,
+      toast: true,
+      position: "top-end",
+      showConfirmButton: false,
+    });
+
+    setTimeout(() => {
+      router.push("/auth/login");
+    }, 2000);
+  }
+
+  
 
   return (
     <div className={styles.signinContainer}>

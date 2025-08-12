@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useState } from 'react';
 import SuperAdminGuard from '../../../components/AdminGuard.js';
+import Swal from 'sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
 
 export default function TheaterAdminsPage() {
   const [admins, setAdmins] = useState([]);
@@ -14,7 +16,6 @@ export default function TheaterAdminsPage() {
     theater_chain: ''
   });
 
-  // Predefined theater chain options
   const theaterChains = [
     { value: 'CGV', name: 'CGV' },
     { value: 'Lotte Cinema', name: 'Lotte Cinema' },
@@ -38,8 +39,34 @@ export default function TheaterAdminsPage() {
     }
   };
 
+  const showToast = (icon, title) => {
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon,
+      title,
+      showConfirmButton: false,
+      timer: 2000
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const actionText = editingAdmin ? 'update' : 'create';
+
+    const result = await Swal.fire({
+      title: `Confirm ${actionText}?`,
+      text: editingAdmin
+        ? 'Do you want to save the changes?'
+        : 'Do you want to create a new theater admin?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Yes',
+      cancelButtonText: 'Cancel'
+    });
+
+    if (!result.isConfirmed) return;
+
     const url = editingAdmin
       ? `/api/admin/theater-admins/${editingAdmin._id}`
       : '/api/admin/theater-admins';
@@ -61,9 +88,13 @@ export default function TheaterAdminsPage() {
         setEditingAdmin(null);
         setForm({ username: '', email: '', password: '', theater_chain: '' });
         fetchAdmins();
+        showToast('success', editingAdmin ? 'Updated successfully' : 'Created successfully');
+      } else {
+        showToast('error', 'Action failed');
       }
     } catch (error) {
       console.error('Error saving admin:', error);
+      showToast('error', 'Action failed');
     }
   };
 
@@ -79,7 +110,17 @@ export default function TheaterAdminsPage() {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa admin này?')) return;
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'This action will delete the admin permanently!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it'
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
       const res = await fetch(`/api/admin/theater-admins/${id}`, {
@@ -87,9 +128,13 @@ export default function TheaterAdminsPage() {
       });
       if (res.ok) {
         fetchAdmins();
+        showToast('success', 'Deleted successfully');
+      } else {
+        showToast('error', 'Delete failed');
       }
     } catch (error) {
       console.error('Error deleting admin:', error);
+      showToast('error', 'Delete failed');
     }
   };
 
@@ -220,11 +265,10 @@ export default function TheaterAdminsPage() {
                         className="flex-1 px-4 py-1 rounded bg-red-500 text-white hover:bg-red-700 transition text-sm"
                         onClick={() => handleDelete(admin._id)}
                       >
-                        Cancel
+                        Delete
                       </button>
                     </div>
                   </td>
-
                 </tr>
               ))}
             </tbody>
@@ -232,7 +276,5 @@ export default function TheaterAdminsPage() {
         </div>
       </div>
     </SuperAdminGuard>
-
-
   );
-} 
+}

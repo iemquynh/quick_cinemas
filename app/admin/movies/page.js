@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { getAllMovies, deleteMovie } from '../../../utils/movieApi';
 import Link from 'next/link';
 import { useAdmin } from '@/hooks/useCurrentUser';
+import Swal from "sweetalert2";
+import "sweetalert2/dist/sweetalert2.min.css";
 
 export default function AdminMoviesPage() {
   const { user, adminLoading } = useAdmin();
@@ -66,18 +68,47 @@ export default function AdminMoviesPage() {
   });
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this movie?')) {
-      try {
-        const response = await deleteMovie(id);
-        if (response.success) {
-          alert('Movie deleted successfully');
-          fetchMovies();
-        } else {
-          alert(response.message);
-        }
-      } catch (error) {
-        alert('Failed to delete movie');
+    // Hiện popup xác nhận
+    const confirm = await Swal.fire({
+      title: "Are you sure?",
+      text: "This movie will be permanently deleted.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it",
+      cancelButtonText: "Cancel",
+    });
+  
+    if (!confirm.isConfirmed) return;
+  
+    try {
+      const response = await deleteMovie(id);
+  
+      // Hiện toast kết quả
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: response.success ? "success" : "error",
+        title: response.success
+          ? "Movie deleted successfully"
+          : (response.message || "Failed to delete movie"),
+        showConfirmButton: false,
+        timer: 2000,
+      });
+  
+      if (response.success) {
+        fetchMovies();
       }
+    } catch (error) {
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "error",
+        title: "Failed to delete movie",
+        showConfirmButton: false,
+        timer: 2000,
+      });
     }
   };
 
@@ -113,9 +144,9 @@ export default function AdminMoviesPage() {
 
         {/* Movie Grid */}
         {loading ? (
-          <div className="text-center text-white text-lg animate-pulse">Đang tải phim...</div>
+          <div className="text-center text-white text-lg animate-pulse">Loading data...</div>
         ) : filteredMovies.length === 0 ? (
-          <div className="text-center text-gray-400 text-lg">Không tìm thấy phim phù hợp.</div>
+          <div className="text-center text-gray-400 text-lg">Not found movies</div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredMovies.map((movie) => (

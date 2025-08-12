@@ -111,3 +111,21 @@ export async function GET(request) {
     );
   }
 }
+
+export async function POST(request) {
+  try {
+    await connectToDatabase();
+
+    const body = await request.json();
+    const movie = await Movie.create(body);
+
+    return NextResponse.json({ success: true, movie }, { status: 201 });
+  } catch (error) {
+    console.error("❌ Error creating movie:", error.message);
+    return NextResponse.json(
+      { success: false, message: "Failed to create movie", error: error.message },
+      { status: 500 }
+    );
+  }
+}
+

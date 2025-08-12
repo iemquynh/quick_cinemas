@@ -45,13 +45,31 @@ export default function BookShowtimePage() {
       });
   }, [showtimeId]);
 
-  const handleSeatSelect = (seat) => {
-    setSelectedSeats((prev) =>
-      prev.some((s) => s.seat_id === seat.seat_id)
-        ? prev.filter((s) => s.seat_id !== seat.seat_id)
-        : [...prev, seat]
-    );
+  const handleSeatSelect = (seatOrSeats) => {
+    if (Array.isArray(seatOrSeats)) {
+      // Ghế couple (mảng 2 ghế)
+      const seatIds = seatOrSeats.map(s => s.seat_id);
+      const allSelected = seatIds.every(id => selectedSeats.some(s => s.seat_id === id));
+  
+      if (allSelected) {
+        // Bỏ chọn cả 2 ghế
+        setSelectedSeats(prev => prev.filter(s => !seatIds.includes(s.seat_id)));
+      } else {
+        // Thêm cả 2 ghế
+        setSelectedSeats(prev => [...prev, ...seatOrSeats.filter(s => !prev.some(ps => ps.seat_id === s.seat_id))]);
+      }
+    } else {
+      // Ghế đơn
+      const seatId = seatOrSeats.seat_id;
+      const isSelected = selectedSeats.some(s => s.seat_id === seatId);
+      if (isSelected) {
+        setSelectedSeats(prev => prev.filter(s => s.seat_id !== seatId));
+      } else {
+        setSelectedSeats(prev => [...prev, seatOrSeats]);
+      }
+    }
   };
+  
 
   const handleBooking = async () => {
     if (selectedSeats.length === 0) {

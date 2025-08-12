@@ -1,5 +1,6 @@
 'use client';
 
+import { AdminProvider } from '@/hooks/useCurrentUser';
 import MovieDetail from './MovieDetail';
 
 export default function MovieDetailClient({ movieData, movieId, relatedMovies }) {
@@ -14,11 +15,13 @@ export default function MovieDetailClient({ movieData, movieId, relatedMovies })
   // };
 
   return (
+    <AdminProvider>
     <MovieDetail
       {...movieData}
       movieId={movieId} 
       // onBook={handleBookTicket}
       relatedMovies={relatedMovies}
     />
+    </AdminProvider>
   );
 } 

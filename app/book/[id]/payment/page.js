@@ -5,7 +5,8 @@ import Header from "@/components/Header";
 import { ticketPrices } from "@/config/ticketPrices";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useCallback } from "react";
-import Promotions from "@/components/Promotions"
+import Promotions from "@/components/Promotions";
+import Swal from 'sweetalert2';
 
 const COMBOS = [
   { id: 1, name: "Popcorn & Drink", price: 70000 },
@@ -132,8 +133,12 @@ export default function PaymentPage() {
       if (diff <= 0 && !paymentClicked && !hasHandledTimeout.current) {
         // Hết thời gian giữ chỗ mà chưa thanh toán
         hasHandledTimeout.current = true;
-        alert("Reservation time expired. Please select your seats again!");
-        router.replace(`/book/${showtimeId}`);
+        Swal.fire({
+          icon: 'warning',
+          title: 'Reservation expired',
+          text: 'Reservation time expired. Please select your seats again!',
+          confirmButtonText: 'OK'
+        }).then(() => router.replace(`/book/${showtimeId}`));
       }
     }
     updateCountdown();
@@ -148,9 +153,23 @@ export default function PaymentPage() {
       let el = e.target;
       while (el && el.tagName !== 'A' && el.tagName !== 'BUTTON') el = el.parentElement;
       if (el && (el.tagName === 'A' || el.tagName === 'BUTTON')) {
-        if (!window.confirm("If you leave this page, your payment information will be lost. Are you sure you want to leave?")) {
-          e.preventDefault();
-        }
+        e.preventDefault();
+        Swal.fire({
+          icon: 'warning',
+          title: 'Are you sure?',
+          text: "If you leave this page, your payment information will be lost.",
+          showCancelButton: true,
+          confirmButtonText: 'Yes, leave',
+          cancelButtonText: 'No, stay'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            if (el.tagName === 'A' && el.href) {
+              window.location.href = el.href;
+            } else if (el.tagName === 'BUTTON') {
+              el.click();
+            }
+          }
+        });
       }
     };
     // Gắn listener cho header
@@ -222,11 +241,27 @@ export default function PaymentPage() {
   // Hàm xử lý thanh toán
   async function handlePayment() {
     if (!paymentProof) {
-      alert("Please upload a payment screenshot!");
+      Swal.fire({
+        icon: 'error',
+        title: 'Missing payment proof',
+        text: 'Please upload a payment screenshot!',
+      });
       return;
     }
     try {
       setLoading(true);
+      const result = await Swal.fire({
+        title: 'Confirm Payment',
+        text: `Are you sure to pay ${finalPrice.toLocaleString()}đ?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, pay now',
+        cancelButtonText: 'Cancel',
+      });
+      if (!result.isConfirmed) {
+        setLoading(false);
+        return;
+      }
       // 1. Upload ảnh
       const proofUrl = await uploadPaymentProof(paymentProof);
       // 2. Gửi API tạo booking trạng thái pending
@@ -269,11 +304,25 @@ export default function PaymentPage() {
         console.error('Booking API error:', data);
         throw new Error(data.error || "Booking failed");
       }
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Payment successful',
+        text: 'Your booking is pending confirmation.',
+        timer: 2500,
+        showConfirmButton: false,
+        toast: true,
+        position: 'top-end',
+      });
       // 3. Chuyển sang trang chờ xác nhận
       router.push(`/book/${showtimeId}/pending?bookingId=${data.bookingId}`);
       // KHÔNG setLoading(false) ở đây nữa!
     } catch (err) {
-      alert("An error occurred during payment: " + err.message);
+      Swal.fire({
+        icon: 'error',
+        title: 'Payment failed',
+        text: err.message || 'An error occurred during payment.',
+      });
       setLoading(false);
     }
   }
@@ -434,7 +483,12 @@ export default function PaymentPage() {
 
                   // Kiểm tra điều kiện đơn hàng tối thiểu
                   if (orderTotal < promo.minimum_order_amount) {
-                    alert("Đơn hàng chưa đạt tối thiểu để áp dụng mã này.");
+                    Swal.fire({
+                      icon: 'error',
+                      title: 'The order does not meet the minimum amount required to apply this code.',
+                      // text: err.message || 'An error occurred during payment.',
+                    });
+                    // alert("Đơn hàng chưa đạt tối thiểu để áp dụng mã này.");
                     setSelectedPromotion(null);
                     return;
                   }
@@ -445,7 +499,12 @@ export default function PaymentPage() {
                     promo.max_usage !== undefined &&
                     promo.used_count >= promo.max_usage
                   ) {
-                    alert("Mã giảm giá đã được sử dụng hết số lần cho phép.");
+                    Swal.fire({
+                      icon: 'error',
+                      title: 'This discount code has reached its maximum usage limit.',
+                      // text: err.message || 'An error occurred during payment.',
+                    });
+                    // alert("Mã giảm giá đã được sử dụng hết số lần cho phép.");
                     setSelectedPromotion(null);
                     return;
                   }

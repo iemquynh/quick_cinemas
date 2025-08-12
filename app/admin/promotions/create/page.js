@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getAuthToken } from '@/utils/auth';
+import Swal from 'sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
 
 export default function CreatePromotionPage() {
   const router = useRouter();
@@ -24,12 +26,24 @@ export default function CreatePromotionPage() {
     setFormData({ ...formData, [name]: value });
   };
 
+  const showToast = (icon, title) => {
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon,
+      title,
+      showConfirmButton: false,
+      timer: 2000,
+      timerProgressBar: true,
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     try {
       const token = getAuthToken();
-  
+
       const payload = {
         ...formData,
         discount_value: Number(formData.discount_value),
@@ -41,10 +55,6 @@ export default function CreatePromotionPage() {
             : null,
       };
 
-      console.log('formData:', formData);
-  
-      console.log('Submitting payload:', payload);
-  
       const res = await fetch('/api/promotions', {
         method: 'POST',
         headers: {
@@ -53,27 +63,28 @@ export default function CreatePromotionPage() {
         },
         body: JSON.stringify(payload),
       });
-  
+
       if (res.ok) {
-        router.push('/admin/promotions');
+        showToast('success', 'Promotion created successfully');
+        setTimeout(() => {
+          router.push('/admin/promotions');
+        }, 2000);
       } else {
         const errorText = await res.text();
         console.error('Failed to create promotion:', errorText);
-        alert(`Failed to create promotion: ${errorText}`);
+        showToast('error', `Failed: ${errorText}`);
       }
     } catch (error) {
       console.error('Unexpected error during promotion creation:', error);
-      alert('Something went wrong. Check the console for details.');
+      showToast('error', 'Something went wrong');
     }
   };
-  
 
   return (
     <div className="max-w-3xl mx-auto p-8 shadow-lg rounded-lg mt-4">
       <h1 className="text-3xl font-bold text-gray-200 mb-8">Create Promotion</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-
         {/* Title */}
         <div>
           <label className="block text-sm font-medium text-gray-200 mb-1">Title</label>
@@ -128,7 +139,7 @@ export default function CreatePromotionPage() {
           />
         </div>
 
-        {/* Maximum Discount Value (only for percentage) */}
+        {/* Maximum Discount Amount (only for percentage) */}
         {formData.discount_type === 'percentage' && (
           <div>
             <label className="block text-sm font-medium text-gray-200 mb-1">

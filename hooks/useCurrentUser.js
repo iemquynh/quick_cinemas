@@ -295,6 +295,10 @@ export function AdminProvider({ children }) {
   };
 
   const redirectByRole = (user, currentPath) => {
+    if (!currentPath.startsWith('/admin')) {
+      return;
+    }
+    
     if (user.role === 'super_admin') {
       if (
         currentPath === '/admin' ||

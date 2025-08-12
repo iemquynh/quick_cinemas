@@ -289,7 +289,7 @@ export default function Home() {
                 <div className="flex justify-center">
                   <div className="bg-white/10 p-6 rounded-2xl shadow-lg">
                     <img
-                      src="https://www.shutterstock.com/image-vector/vector-illustration-happy-kids-going-260nw-201747179.jpg"  // <- Đổi tên file thành banner-cinema.png
+                      src="https://evgroup.vn/wp-content/uploads/2024/04/thiet_bi_rap_phim_06.jpg"  // <- Đổi tên file thành banner-cinema.png
                       alt="Xem phim cùng gia đình"
                       className="w-72 md:w-80 h-auto object-contain"
                     />

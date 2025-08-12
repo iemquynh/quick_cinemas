@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { getMovieById, updateMovie } from '../../../../../utils/movieApi';
 import AdminGuard from '../../../../../components/AdminGuard';
 import Select from 'react-select';
+import Swal from "sweetalert2";
+import "sweetalert2/dist/sweetalert2.min.css";
 
 
 export default function EditMoviePage({ params }) {
@@ -164,19 +166,49 @@ export default function EditMoviePage({ params }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
+    // Popup xác nhận trước khi lưu
+    const confirm = await Swal.fire({
+      title: "Confirm update?",
+      text: "Are you sure you want to update this movie?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Yes, update it",
+      cancelButtonText: "Cancel",
+    });
+  
+    if (!confirm.isConfirmed) return;
+  
     setSaving(true);
+  
     // Ghép runtime
     const runtime = `${runtimeHour ? runtimeHour + 'h ' : ''}${runtimeMinute ? runtimeMinute + 'm' : ''}`.trim();
+  
     try {
       const response = await updateMovie(unwrappedParams.id, { ...formData, runtime });
+  
+      // Hiện toast thông báo
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: response.success ? "success" : "error",
+        title: response.success ? "Movie updated successfully" : (response.message || "Failed to update movie"),
+        showConfirmButton: false,
+        timer: 2000,
+      });
+  
       if (response.success) {
-        alert('Movie updated successfully!');
         router.push('/admin/movies');
-      } else {
-        alert(response.message || 'Failed to update movie');
       }
     } catch (error) {
-      alert('Error updating movie');
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "error",
+        title: "Error updating movie",
+        showConfirmButton: false,
+        timer: 2000,
+      });
     } finally {
       setSaving(false);
     }

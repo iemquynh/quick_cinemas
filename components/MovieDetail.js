@@ -286,7 +286,7 @@ export default function MovieDetail({
   console.log('relatedMovies prop:', relatedMovies);
   const [showTrailer, setShowTrailer] = useState(false);
   const videoId = trailerUrl ? getYouTubeId(trailerUrl) : null;
-  const { user, loading } = useAdmin();
+  const { user, loading, hasChecked } = useAdmin();
   const isTheaterAdmin = user && user.role === 'theater_admin';
   const isSuperAdmin = user && user.role === 'super_admin';
   const isNormalUser = user && !isSuperAdmin && !isTheaterAdmin;
@@ -302,40 +302,55 @@ export default function MovieDetail({
     setSelectedDate(null); // hoặc setSelectedDate(new Date());
   }, [movieId]);
 
+  if (!hasChecked) {
+    return (
+      <div className="flex items-center justify-center min-h-screen text-white">
+        Loading data...
+      </div>
+    );
+  }
+
   return (
-    <div className="relative min-h-screen bg-gray-900">
+    <div className="relative min-h-screen bg-[#0a1a2f]">
       {/* Header hoặc Admin Panel */}
       {!loading && (
         isSuperAdmin ? (
           <AdminGuard headerOnly />
         ) : isTheaterAdmin ? (
-          <div className="fixed top-0 left-0 w-full z-50 bg-[#1a2332] text-white shadow-lg border-b border-gray-800">
-            <div className="container mx-auto px-4 py-3">
-              <div className="flex justify-between items-center flex-wrap gap-2">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4">
-                  <h1 className="text-xl font-bold text-white">Theater Admin Panel</h1>
-                  <span className="text-sm text-gray-400">
-                    Welcome, {user?.username || 'Admin'}
-                    {user?.theater_chain && ` - ${user.theater_chain}`}
-                  </span>
-                </div>
-                <div className="flex items-center space-x-2 mt-2 sm:mt-0">
-                  <Link
-                    href="/admin/dashboard"
-                    className="text-gray-300 hover:text-white text-sm px-3 py-1 rounded border border-gray-600"
-                  >
-                    Dashboard
-                  </Link>
-                  <button
-                    onClick={user.logout}
-                    className="text-gray-300 hover:text-white text-sm px-3 py-1 rounded border border-gray-600"
-                  >
-                    Logout
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+          <AdminGuard />
+          // <div className="fixed top-0 left-0 w-full z-50 bg-[#1a2332] text-white shadow-lg border-b border-gray-800">
+          //   <div className="container mx-auto px-4 py-3">
+          //     <div className="flex justify-between items-center flex-wrap gap-2">
+          //       {/* <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4">
+          //         <h1 className="text-xl font-bold text-white">Theater Admin Panel</h1>
+          //         <span className="text-sm text-gray-400">
+          //           Welcome, {user?.username || 'Admin'}
+          //           {user?.theater_chain && ` - ${user.theater_chain}`}
+          //         </span>
+          //       </div>
+          //       <div className="flex items-center space-x-2 mt-2 sm:mt-0">
+          //         <Link
+          //           href="/admin/dashboard"
+          //           className="text-gray-300 hover:text-white text-sm px-3 py-1 rounded border border-gray-600"
+          //         >
+          //           Dashboard
+          //         </Link>
+          //         <button
+          //           onClick={() => {
+          //             localStorage.removeItem('auth-token');
+          //             localStorage.removeItem('user');
+          //             if (window.refreshUser) window.refreshUser();
+          //             window.location.href = '/';
+          //           }}
+          //           className="text-gray-300 hover:text-white text-sm px-3 py-1 rounded border border-gray-600"
+          //         >
+          //           Logout
+          //         </button>
+          //       </div> */}
+          //       {/* <AdminGuard /> */}
+          //     </div>
+          //   </div>
+          // </div>
         ) : (
           <Header />
         )
@@ -344,11 +359,11 @@ export default function MovieDetail({
       {/* Video/Background */}
       <div
         className="w-full relative"
-        style={{ height: 270, backgroundColor: "#111", marginTop: (isSuperAdmin || isTheaterAdmin) ? headerHeight : 60 }}
+        style={{ height: 270, backgroundColor: "#111", marginTop: isSuperAdmin ? headerHeight : isTheaterAdmin ? -560 : 60 }}
       >
         {showTrailer && videoId ? (
           <iframe
-            className="w-full h-full absolute inset-0"
+            className="w-full h-full absolute inset-0"  
             src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
             title="Trailer"
             frameBorder="0"
@@ -383,7 +398,7 @@ export default function MovieDetail({
         )}
       </div>
       {/* Floating Card */}
-      <div className="absolute top-[calc(160px+5vw)] right-0  z-30 w-full px-4 md:px-0 max-w-6xl">
+      <div className="absolute top-[calc(200px+5vw)] right-0 z-30 w-full px-4 md:px-0 max-w-6xl" style={{ marginTop: !isTheaterAdmin ? '-42px' : '10px' }}>
         <div className="bg-opacity-95 rounded-lg shadow-2xl px-4 sm:px-6 md:px-10 py-6 md:py-8 w-full ">
           <div className="flex flex-col lg:flex-row items-start gap-6 md:gap-20 mx-auto">
             {/* Poster + Book button */}
@@ -481,9 +496,6 @@ export default function MovieDetail({
 
       {/* Comment Section Component */}
       <MovieComments movieId={movieId} readOnly={user && (isSuperAdmin || isTheaterAdmin)} />
-
-
-
 
       {!(isSuperAdmin || isTheaterAdmin) && (
         <>

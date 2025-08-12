@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createMovie } from '../../../../utils/movieApi';
 import Select from 'react-select';
+import Swal from 'sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
 
 export default function CreateMoviePage() {
   const router = useRouter();
@@ -65,6 +67,17 @@ export default function CreateMoviePage() {
     setFormData((prev) => ({ ...prev, genre: selected.map((opt) => opt.value).join(', ') }));
   };
 
+  const showToast = (icon, title) => {
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon,
+      title,
+      showConfirmButton: false,
+      timer: 2000
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -73,13 +86,15 @@ export default function CreateMoviePage() {
     try {
       const response = await createMovie({ ...formData, runtime });
       if (response.success) {
-        alert('Movie created successfully!');
-        router.push('/admin/movies');
+        showToast('success', 'Movie created successfully!');
+        setTimeout(() => {
+          router.push('/admin/movies');
+        }, 1000);
       } else {
-        alert(response.message || 'Failed to create movie');
+        showToast('error', response.message || 'Failed to create movie');
       }
     } catch (error) {
-      alert('Error creating movie');
+      showToast('error', 'Error creating movie');
     } finally {
       setLoading(false);
     }

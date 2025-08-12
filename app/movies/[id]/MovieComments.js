@@ -136,7 +136,7 @@ export default function MovieComments({ movieId, readOnly = false }) {
   }
 
   return (
-    <div className="relative z-10 mt-14 w-full max-w-3xl mx-auto px-4">
+    <div className="relative z-10 mt-24 w-full max-w-3xl mx-auto px-4 ">
       <h3 className="text-lg font-bold mb-2">Comment & Rating</h3>
       {/* Hiển thị rating trung bình */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">

@@ -28,14 +28,14 @@ export default function ChatWidget({ booking, user, onClose }) {
         booking.user_id?.username ||
         booking.user_id?.name ||
         booking.user_id?.email ||
-        "Khách"
+        "User"
       );
     }
     // User đang xem
     return (
       (booking.showtime_id?.theater_chain
         ? `Admin ${booking.showtime_id.theater_chain}`
-        : "Admin rạp")
+        : "Theater Admin")
     );
   };
 
@@ -79,10 +79,10 @@ export default function ChatWidget({ booking, user, onClose }) {
             />
             <div className="flex-1">
               <div className="font-semibold line-clamp-2">
-                {booking.showtime_id?.movie_id?.title || "Tên phim"}
+                {booking.showtime_id?.movie_id?.title || "Title"}
               </div>
               <div className="text-gray-400 text-xs">
-                {(booking.showtime_id?.theater_id?.name || "Tên rạp") +
+                {(booking.showtime_id?.theater_id?.name || "Theater") +
                   (booking.seats?.length
                     ? " - " + booking.seats.map(s => s.seat_id).join(", ")
                     : "")}
@@ -90,18 +90,18 @@ export default function ChatWidget({ booking, user, onClose }) {
               <div className="text-red-500 font-bold text-sm">
                 {booking.total
                   ? booking.total.toLocaleString("vi-VN") + " ₫"
-                  : "Tổng tiền"}
+                  : "Final total"}
               </div>
             </div>
           </div>
           <div className="flex justify-between mt-3 text-blue-500 text-sm font-medium">
-            <Link href={`/my-tickets?bookingId=${booking._id}`} className="hover:underline">Chi tiết vé</Link>
+            <Link href={`/my-tickets?bookingId=${booking._id}`} className="hover:underline">Booking detail</Link>
             {(() => {
               const movieId = typeof booking.showtime_id?.movie_id === 'object'
                 ? booking.showtime_id.movie_id._id
                 : booking.showtime_id?.movie_id;
               return (
-                <Link href={`/movies/${movieId}`} className="hover:underline">Chi tiết phim</Link>
+                <Link href={`/movies/${movieId}`} className="hover:underline">Movie detail</Link>
               );
             })()}
           </div>
@@ -153,7 +153,7 @@ export default function ChatWidget({ booking, user, onClose }) {
           className="text-blue-500 font-semibold text-sm"
           onClick={handleSend}
         >
-          Gửi
+          Send
         </button>
       </div>
     </div>

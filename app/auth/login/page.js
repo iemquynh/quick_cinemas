@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import styles from "./SignIn.module.css";
-import { FiEye, FiEyeOff } from "react-icons/fi";
+import { FiEye, FiEyeOff, FiHome } from "react-icons/fi";
 import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function SignIn() {
@@ -36,7 +36,7 @@ export default function SignIn() {
       // Sau khi nhận response từ API login:
       localStorage.setItem('auth-token', data.token); // <-- BẮT BUỘC PHẢI CÓ DÒNG NÀY
       localStorage.setItem('user', JSON.stringify(data.user));
-      
+
       // Lấy redirect URL từ query params
       const redirectUrl = searchParams.get('redirect');
 
@@ -72,14 +72,29 @@ export default function SignIn() {
   return (
     <div className={styles.signinContainer}>
       <div className={styles.signinCard}>
-        <button onClick={() => window.history.back()} className={styles.closeBtn}>&times;</button>
+        <div className="flex justify-between items-center mb-4">
+          <button
+            onClick={() => router.push("/")}
+            aria-label="Go to homepage"
+            className="text-gray-600 hover:text-gray-900 text-2xl"
+          >
+            <FiHome />
+          </button>
+          <button
+            onClick={() => window.history.back()}
+            className={styles.closeBtn + " text-gray-600 hover:text-gray-900 text-3xl"}
+            aria-label="Close"
+          >
+            &times;
+          </button>
+        </div>
         <h2 className={styles.signinTitle}>SIGN IN</h2>
         {searchParams.get('redirect') && (
-          <p style={{ 
-            color: '#666', 
-            fontSize: '14px', 
-            textAlign: 'center', 
-            marginBottom: '20px' 
+          <p style={{
+            color: '#666',
+            fontSize: '14px',
+            textAlign: 'center',
+            marginBottom: '20px'
           }}>
             You'll be redirected to {searchParams.get('redirect')} after signing in
           </p>
@@ -87,9 +102,9 @@ export default function SignIn() {
         <form className={styles.form} onSubmit={handleSubmit}>
           <label className={styles.label}>Email</label>
           <div className={styles.passwordWrapper}>
-            <input 
-              className={styles.input} 
-              type="email" 
+            <input
+              className={styles.input}
+              type="email"
               name="email"
               placeholder="Enter your email"
               required
@@ -116,14 +131,14 @@ export default function SignIn() {
           </div>
           {error && <div style={{ color: "red", marginBottom: 8 }}>{error}</div>}
           <a href="/auth/forgot-password" className={styles.forgotLink}>Forgot your password?</a>
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className={styles.signinBtn}
             disabled={loading}
           >
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
-          <a href="/auth/register" className={styles.forgotLink} style={{textAlign: 'center'}}>Create a new account</a>
+          <a href="/auth/register" className={styles.forgotLink} style={{ textAlign: 'center' }}>Create a new account</a>
         </form>
       </div>
     </div>

@@ -103,10 +103,10 @@ export default function AdminBookingsPage() {
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      pending: { color: 'bg-yellow-100 text-yellow-800', text: 'Chờ xác nhận' },
-      using: { color: 'bg-green-100 text-green-800', text: 'Đã xác nhận' },
-      cancel: { color: 'bg-red-100 text-red-800', text: 'Đã hủy' },
-      expired: { color: 'bg-gray-100 text-gray-800', text: 'Hết hạn' }
+      pending: { color: 'bg-yellow-100 text-yellow-800', text: 'Pending' },
+      using: { color: 'bg-green-100 text-green-800', text: 'Confirmed' },
+      cancel: { color: 'bg-red-100 text-red-800', text: 'Cancelled' },
+      expired: { color: 'bg-gray-100 text-gray-800', text: 'Expired' }
     };
     const config = statusConfig[status] || statusConfig.pending;
     return (
@@ -151,10 +151,10 @@ export default function AdminBookingsPage() {
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
               >
-                {status === 'pending' && 'Chờ xác nhận'}
-                {status === 'using' && 'Đã xác nhận'}
-                {status === 'cancel' && 'Đã hủy'}
-                {status === 'expired' && 'Hết hạn'}
+                {status === 'pending' && 'Pending'}
+                {status === 'using' && 'Confirmed'}
+                {status === 'cancel' && 'Cancelled'}
+                {status === 'expired' && 'Expired'}
               </button>
             ))}
           </nav>

@@ -5,6 +5,8 @@ import SeatMap from "@/components/SeatMap";
 import { seatmapConfigs } from "@/components/seatmapConfigs";
 import TheaterAdminGuard from "@/components/TheaterAdminGuard";
 import AdminGuard from "@/components/AdminGuard";
+import Swal from "sweetalert2";
+import "sweetalert2/dist/sweetalert2.min.css";
 
 const VIP_ROWS = ["E", "F", "G"];
 const COUPLE_SEATS = [
@@ -27,19 +29,17 @@ function getSeatColor(type, booked, selected) {
 }
 
 const ROWS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K"];
-const COLS = Array.from({ length: 19 }, (_, i) => i + 1); // 1-19
+const COLS = Array.from({ length: 19 }, (_, i) => i + 1);
 
 function generateSeatsLayout(existingLayout) {
   if (Array.isArray(existingLayout) && existingLayout.length > 0) return existingLayout;
-
   let seats = [];
   for (let r = 0; r < ROWS.length; r++) {
     let row = ROWS[r];
     for (let c = 0; c < COLS.length; c++) {
       let col = COLS[c];
-      let seatId = row + col;
       seats.push({
-        seat_id: seatId,
+        seat_id: row + col,
         row,
         col,
         type: getSeatType(row, col),
@@ -53,15 +53,14 @@ function generateSeatsLayout(existingLayout) {
   return seats;
 }
 
-
 const getSeatConfigByTheaterName = (theaterName) => {
   if (!theaterName) return seatmapConfigs.Default;
-  const firstWord = theaterName.trim().split(' ')[0].toLowerCase();
-  if (firstWord === 'cgv') return seatmapConfigs.CGV;
-  if (firstWord === 'lotte') return seatmapConfigs.Lotte;
-  if (firstWord === 'galaxy') return seatmapConfigs.Galaxy;
-  if (firstWord === 'bhd') return seatmapConfigs.BHD;
-  if (firstWord === 'beta') return seatmapConfigs.Beta;
+  const firstWord = theaterName.trim().split(" ")[0].toLowerCase();
+  if (firstWord === "cgv") return seatmapConfigs.CGV;
+  if (firstWord === "lotte") return seatmapConfigs.Lotte;
+  if (firstWord === "galaxy") return seatmapConfigs.Galaxy;
+  if (firstWord === "bhd") return seatmapConfigs.BHD;
+  if (firstWord === "beta") return seatmapConfigs.Beta;
   return seatmapConfigs.Default;
 };
 
@@ -72,99 +71,47 @@ export default function ShowtimeDetailPage({ params }) {
   const [seats, setSeats] = useState([]);
   const [selected, setSelected] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState("");
-  const [editMode, setEditMode] = useState(false);
-  const [form, setForm] = useState({ movie: '', theater: '', time: '', room: '', type: '' });
+  const [form, setForm] = useState({ movie: "", theater: "", time: "", room: "", type: "" });
   const [theaterDetail, setTheaterDetail] = useState(null);
   const [hasBookedSeat, setHasBookedSeat] = useState(false);
-
-
-  // useEffect(() => {
-  //   const token = localStorage.getItem('token');
-  //   fetch(`/api/showtimes/${unwrappedParams.id}`, {
-  //     headers: {
-  //       'Authorization': `Bearer ${token}`
-  //     }
-  //   })
-  //     .then(res => res.json())
-  //     .then(data => {
-  //       setShowtime(data);
-  //       setSeats(generateSeatsLayout(data.seats_layout));
-  //       setForm({
-  //         movie: data.movie_id?._id || data.movie_id || '',
-  //         theater: data.theater_id?._id || data.theater_id || '',
-  //         time: data.time ? new Date(data.time).toISOString().slice(0, 16) : '',
-  //         room: data.room || '',
-  //         type: data.type || ''
-  //       });
-  //       setLoading(false);
-  //       // Lấy chi tiết rạp để render dropdown
-  //       if (data.theater_id?._id || data.theater_id) {
-  //         const tid = data.theater_id?._id || data.theater_id;
-  //         fetch(`/api/theaters/${tid}`)
-  //           .then(res => res.json())
-  //           .then(setTheaterDetail);
-  //       }
-  //     });
-  // }, [unwrappedParams.id]);
+  const [editMode, setEditMode] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-  
+    const token = localStorage.getItem("token");
     fetch(`/api/showtimes/${unwrappedParams.id}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
+      headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
       .then(data => {
         setShowtime(data);
-        
-        // Tạo layout ghế từ dữ liệu nhận về
         const layout = generateSeatsLayout(data.seats_layout);
         setSeats(layout);
-  
-        // Cập nhật form thông tin
         setForm({
-          movie: data.movie_id?._id || data.movie_id || '',
-          theater: data.theater_id?._id || data.theater_id || '',
-          time: data.time ? new Date(data.time).toISOString().slice(0, 16) : '',
-          room: data.room || '',
-          type: data.type || ''
+          movie: data.movie_id?._id || data.movie_id || "",
+          theater: data.theater_id?._id || data.theater_id || "",
+          time: data.time ? new Date(data.time).toISOString().slice(0, 16) : "",
+          room: data.room || "",
+          type: data.type || ""
         });
-  
-        // Kiểm tra nếu có ghế đã được đặt
-        const anyBooked = layout.some(s => s.status === "booked" || s.booked_user);
-        setHasBookedSeat(anyBooked);
-  
+        setHasBookedSeat(layout.some(s => s.status === "booked" || s.booked_user));
         setLoading(false);
-  
-        // Gọi thêm API lấy chi tiết rạp
+
         const tid = data.theater_id?._id || data.theater_id;
         if (tid) {
-          fetch(`/api/theaters/${tid}`)
-            .then(res => res.json())
-            .then(setTheaterDetail);
+          fetch(`/api/theaters/${tid}`).then(res => res.json()).then(setTheaterDetail);
         }
       });
   }, [unwrappedParams.id]);
-  
 
   const handleSeatClick = (seat) => {
     if (Array.isArray(seat)) {
-      // Ghế couple: toggle cả 2 ghế
       const ids = seat.map(s => s.seat_id);
-      setSelected(prev => {
-        if (ids.every(id => prev.includes(id))) {
-          // Nếu cả 2 ghế đã chọn, bỏ chọn cả 2
-          return prev.filter(id => !ids.includes(id));
-        } else {
-          // Thêm những ghế chưa có vào selected
-          return [...prev, ...ids.filter(id => !prev.includes(id))];
-        }
-      });
+      setSelected(prev =>
+        ids.every(id => prev.includes(id))
+          ? prev.filter(id => !ids.includes(id))
+          : [...prev, ...ids.filter(id => !prev.includes(id))]
+      );
     } else {
-      // Ghế thường/vip: toggle 1 ghế
       setSelected(prev =>
         prev.includes(seat.seat_id)
           ? prev.filter(id => id !== seat.seat_id)
@@ -174,55 +121,93 @@ export default function ShowtimeDetailPage({ params }) {
   };
 
   const handleSaveSeats = async () => {
-    // Cho phép admin chọn/bỏ chọn lại ghế đã booked
     const newSeats = seats.map((s) =>
       selected.includes(s.seat_id)
         ? { ...s, booked: true, user_id: "admin" }
         : { ...s, booked: false, user_id: null }
     );
-    setMessage("Saving...");
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     const res = await fetch(`/api/showtimes/${unwrappedParams.id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
+        Authorization: `Bearer ${token}`
       },
       body: JSON.stringify({ seats_layout: newSeats }),
     });
+
+    Swal.fire({
+      toast: true,
+      position: "top-end",
+      icon: res.ok ? "success" : "error",
+      title: res.ok ? "Seats saved successfully" : "Failed to save seats",
+      showConfirmButton: false,
+      timer: 2000
+    });
+
     if (res.ok) {
       setSeats(newSeats);
       setSelected([]);
-      setMessage("Lưu thành công!");
-    } else {
-      setMessage("Có lỗi khi lưu!");
     }
   };
 
-  const handleEdit = () => setEditMode(true);
-  const handleCancel = () => {
-    setEditMode(false);
-    // Reset lại form về dữ liệu gốc
-    setForm({
-      movie: showtime.movie_id?._id || showtime.movie_id || '',
-      theater: showtime.theater_id?._id || showtime.theater_id || '',
-      time: showtime.time ? new Date(showtime.time).toISOString().slice(0, 16) : '',
-      room: showtime.room || '',
-      type: showtime.type || ''
+  const handleEdit = () => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "Do you want to edit this schedule?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, edit it"
+    }).then((result) => {
+      if (result.isConfirmed) {
+        setEditMode(true);
+        Swal.fire({
+          toast: true,
+          position: "top-end",
+          icon: "success",
+          title: "Edit mode activated",
+          showConfirmButton: false,
+          timer: 2000
+        });
+      }
     });
   };
+
+  const handleCancel = () => {
+    setEditMode(false);
+    setForm({
+      movie: showtime.movie_id?._id || showtime.movie_id || "",
+      theater: showtime.theater_id?._id || showtime.theater_id || "",
+      time: showtime.time ? new Date(showtime.time).toISOString().slice(0, 16) : "",
+      room: showtime.room || "",
+      type: showtime.type || ""
+    });
+  };
+
   const handleFormChange = (e) => {
     setForm(f => ({ ...f, [e.target.name]: e.target.value }));
   };
+
   const handleSaveInfo = async () => {
-    if (!window.confirm('Bạn có chắc chắn muốn lưu thay đổi thông tin suất chiếu?')) return;
-    setMessage("Saving...");
-    const token = localStorage.getItem('token');
+    const confirmResult = await Swal.fire({
+      title: "Confirm save?",
+      text: "Do you want to save changes to this schedule?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Yes, save it",
+      cancelButtonText: "Cancel"
+    });
+
+    if (!confirmResult.isConfirmed) return;
+
+    const token = localStorage.getItem("token");
     const res = await fetch(`/api/showtimes/${unwrappedParams.id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
+        Authorization: `Bearer ${token}`
       },
       body: JSON.stringify({
         time: form.time,
@@ -230,23 +215,24 @@ export default function ShowtimeDetailPage({ params }) {
         type: form.type
       }),
     });
+
+    Swal.fire({
+      toast: true,
+      position: "top-end",
+      icon: res.ok ? "success" : "error",
+      title: res.ok ? "Schedule updated" : "Failed to update schedule",
+      showConfirmButton: false,
+      timer: 2000
+    });
+
     if (res.ok) {
       setEditMode(false);
-      setMessage("Lưu thành công!");
-      // Reload lại dữ liệu showtime
-      fetch(`/api/showtimes/${unwrappedParams.id}`)
-        .then(res => res.json())
-        .then(data => setShowtime(data));
-    } else {
-      setMessage("Có lỗi khi lưu!");
+      fetch(`/api/showtimes/${unwrappedParams.id}`).then(res => res.json()).then(setShowtime);
     }
   };
 
-  if (loading) return <div className="p-8">Đang tải...</div>;
-  if (!showtime) return <div className="p-8">Không tìm thấy suất chiếu</div>;
-
-  // Kiểm tra có ghế nào đã đặt không
-  // const hasBookedSeat = seats.some(s => s.booked);
+  if (loading) return <div className="p-8">Loading data...</div>;
+  if (!showtime) return <div className="p-8">Not found showtimes</div>;
 
   return (
     <div className="min-h-screen bg-[#1a2332] pt-20 px-4 md:px-6 lg:px-12">
@@ -256,7 +242,6 @@ export default function ShowtimeDetailPage({ params }) {
           {!editMode && !hasBookedSeat && (
             <button className="btn btn-outline btn-info" onClick={handleEdit}>Edit</button>
           )}
-
         </div>
 
         {hasBookedSeat && (
@@ -268,11 +253,11 @@ export default function ShowtimeDetailPage({ params }) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           <div>
             <label className="font-semibold text-white">🎬 Movie:</label>
-            <input className="input input-bordered w-full" value={showtime.movie_id?.title || ''} disabled />
+            <input className="input input-bordered w-full" value={showtime.movie_id?.title || ""} disabled />
           </div>
           <div>
             <label className="font-semibold text-white">🏢 Theater:</label>
-            <input className="input input-bordered w-full" value={showtime.theater_id?.name || ''} disabled />
+            <input className="input input-bordered w-full" value={showtime.theater_id?.name || ""} disabled />
           </div>
           <div>
             <label className="font-semibold text-white">🕒 Time:</label>
@@ -296,9 +281,7 @@ export default function ShowtimeDetailPage({ params }) {
               >
                 <option value="">Select room</option>
                 {Array.from({ length: theaterDetail.rooms }, (_, i) => `Room ${i + 1}`).map(room => (
-                  <option key={room} value={room}>
-                    {room}
-                  </option>
+                  <option key={room} value={room}>{room}</option>
                 ))}
               </select>
             ) : (
@@ -316,9 +299,7 @@ export default function ShowtimeDetailPage({ params }) {
               >
                 <option value="">Select type screen</option>
                 {theaterDetail.screenTypes.map(type => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
+                  <option key={type} value={type}>{type}</option>
                 ))}
               </select>
             ) : (
@@ -348,10 +329,7 @@ export default function ShowtimeDetailPage({ params }) {
             seatConfig={getSeatConfigByTheaterName(theaterDetail?.name)}
           />
         </div>
-
-        {message && <div className="mt-2 text-info">{message}</div>}
       </div>
     </div>
   );
-
-} 
+}
