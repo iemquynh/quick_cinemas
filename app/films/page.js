@@ -3,7 +3,10 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Header from '@/components/Header';
-import { Sparkles } from "lucide-react";
+import { Sparkles, Clapperboard, Heart, Star } from "lucide-react";
+import Image from 'next/image';
+import { motion } from "framer-motion";
+
 
 export default function FilmsPage() {
   const [bookedGenreMovies, setBookedGenreMovies] = useState([]);
@@ -17,6 +20,15 @@ export default function FilmsPage() {
 
   // New: State for search term
   const [searchTerm, setSearchTerm] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
 
   // New: Filter function
   const filterMoviesBySearch = (movies) => {
@@ -57,36 +69,67 @@ export default function FilmsPage() {
     fetchData();
   }, []);
 
-  const renderMovies = (movies) => (
-    <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {movies.map((movie) => (
-        <Link key={movie._id} href={`/movies/${movie._id}`} className="group">
-          <div className="bg-gray-800 rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-105 transition-all duration-300 border border-gray-700 hover:border-blue-400">
-            <div className="relative">
-              <img
-                src={movie.poster}
-                alt={movie.title}
-                className="w-full h-64 object-cover rounded-t-xl"
-              />
-              <div className="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-full">
-                ⭐ {movie.rating_average || 'N/A'}
-              </div>
-            </div>
-            <div className="p-4">
-              <h3 className="text-lg font-semibold text-white group-hover:text-blue-400 transition-colors">
-                {movie.title}
-              </h3>
-              <div className="flex justify-between text-sm text-gray-400 mt-2">
-                <span className="capitalize">🎬 {movie.genre}</span>
-                <span>⏱ {movie.runtime}</span>
-              </div>
-              <p className="text-sm text-gray-500 mt-1">📅 {movie.releaseDate}</p>
+  const renderMovies = (movies, isMobile) => (
+    <div className="grid sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-8">
+      {movies.map((movie) => {
+        const CardContent = (
+          <div className="relative aspect-[2/3] overflow-hidden">
+            <img
+              src={movie.poster || "https://img.lovepik.com/photo/45007/3927.jpg_wh860.jpg"}
+              alt={movie.title}
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              onError={(e) => (e.currentTarget.src = "https://img.lovepik.com/photo/45007/3927.jpg_wh860.jpg")}
+            />
+            <div className="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-full">
+              ⭐ {movie.rating_average || "N/A"}
             </div>
           </div>
-        </Link>
-      ))}
+        );
+
+        const CardWrapper = (
+          <div className="bg-gray-900 border border-gray-700 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg hover:border-blue-500 transition-all duration-300">
+            {CardContent}
+            <div className="p-4">
+              <h3 className="text-lg font-medium text-white group-hover:text-blue-400 transition-colors truncate">
+                {movie.title}
+              </h3>
+              <div className="mt-2 text-sm text-gray-400 space-y-1">
+                <p>🎬 {movie.genre}</p>
+                <p>⏱ {movie.runtime}</p>
+                <p>📅 {movie.releaseDate}</p>
+              </div>
+            </div>
+          </div>
+        );
+
+        return (
+          <Link key={movie._id} href={`/movies/${movie._id}`} className="group">
+            {isMobile ? (
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{
+                  opacity: 1,
+                  y: 0,
+                  scale: 1, // giảm scale cho nhẹ, không tràn màn hình
+                  borderColor: "#3b82f6",
+                  boxShadow: "0px 4px 12px rgba(59,130,246,0.4)",
+                }}
+                transition={{ duration: 0.4 }}
+                viewport={{ once: true, amount: 0.3 }}
+                className="rounded-2xl border border-transparent"
+              >
+                {CardWrapper}
+              </motion.div>
+
+            ) : (
+              CardWrapper
+            )}
+          </Link>
+        );
+      })}
     </div>
   );
+
 
   const renderSection = (title, icon, color, movies, showAll, toggleShowAll) => {
     if (movies.length === 0) return null;
@@ -94,15 +137,30 @@ export default function FilmsPage() {
 
     return (
       <section className="mb-16">
-        <h2 className={`text-xl sm:text-2xl md:text-3xl font-bold ${color} mb-6 border-b pb-2 flex items-center gap-2`}>
-          {icon} {title} <Sparkles className={`${color.replace('text-', 'text-')} w-5 h-5 animate-pulse`} />
-        </h2>
-        {renderMovies(displayedMovies)}
+        {/* Phần tiêu đề */}
+        <div className="flex items-center gap-3 mb-6 border-b border-gray-700 pb-3">
+          <div className={`p-2 rounded-full bg-gray-800 border ${color.replace("text-", "border-")}`}>
+            {icon}
+          </div>
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold leading-snug">
+              {title}
+            </h2>
+            <Sparkles className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 animate-pulse text-blue-400 flex-shrink-0" />
+          </div>
+
+
+        </div>
+
+        {/* Grid phim */}
+        {renderMovies(displayedMovies, isMobile)}
+
+        {/* Show more button ở dưới */}
         {movies.length > 6 && (
-          <div className="text-center mt-4">
+          <div className="flex justify-center mt-6">
             <button
               onClick={toggleShowAll}
-              className={`text-sm px-4 py-2 rounded-full border ${color.replace('text-', 'border-')} ${color} hover:underline`}
+              className={`text-sm px-6 py-2 rounded-full border ${color.replace("text-", "border-")} ${color} hover:underline transition-all duration-200`}
             >
               {showAll ? 'Show less' : 'Show more'}
             </button>
@@ -111,6 +169,7 @@ export default function FilmsPage() {
       </section>
     );
   };
+
 
   return (
     <>
@@ -127,20 +186,37 @@ export default function FilmsPage() {
           />
         </div>
 
-        <div className="container mx-auto px-4">
+        <div className="max-w-6xl mx-auto px-8">
           {loading ? (
             <div className="text-center text-white text-lg animate-pulse">Loading...</div>
           ) : (
             <>
               {renderSection(
                 'Movies of the same genre you have previously booked',
-                '🎞️',
-                'text-blue-400',
+                <Clapperboard className="w-5 h-5 text-neutral-200" />,
+                'text-neutral-200',
                 filterMoviesBySearch(bookedGenreMovies),
                 showAllBooked,
                 () => setShowAllBooked(!showAllBooked)
               )}
               {renderSection(
+                'Movies based on your selected interests during registration',
+                <Heart className="w-5 h-5 text-neutral-200" />,
+                'text-neutral-200',
+                filterMoviesBySearch(preferredGenreMovies),
+                showAllPreferred,
+                () => setShowAllPreferred(!showAllPreferred)
+              )}
+              {renderSection(
+                'Top-rated movies',
+                <Star className="w-5 h-5 text-neutral-200" />,
+                'text-neutral-200',
+                filterMoviesBySearch(topRankingMovies),
+                showAllTop,
+                () => setShowAllTop(!showAllTop)
+              )}
+
+              {/* {renderSection(
                 'Movies based on your selected interests during registration',
                 '🍿',
                 'text-green-400',
@@ -155,13 +231,13 @@ export default function FilmsPage() {
                 filterMoviesBySearch(topRankingMovies),
                 showAllTop,
                 () => setShowAllTop(!showAllTop)
-              )}
+              )} */}
 
               {filterMoviesBySearch(bookedGenreMovies).length === 0 &&
                 filterMoviesBySearch(preferredGenreMovies).length === 0 &&
                 filterMoviesBySearch(topRankingMovies).length === 0 && (
                   <div className="text-center text-gray-400 mt-10">No suitable movies to display.</div>
-              )}
+                )}
             </>
           )}
         </div>

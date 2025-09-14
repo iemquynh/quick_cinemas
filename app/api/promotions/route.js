@@ -1,99 +1,3 @@
-// import { NextResponse } from 'next/server';
-// import { connectToDatabase } from '@/lib/mongodb';
-// import Promotion from '@/models/Promotion';
-// import { getAuth } from '@/utils/auth';
-
-// export async function POST(req) {
-//   await connectToDatabase();
-
-//   const user = await getAuth(req);
-//   console.log('Authenticated user:', user);
-
-//   if (!user || user.role !== 'theater_admin') {
-//     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-//   }
-
-//   try {
-//     const body = await req.json();
-//     // Lấy các trường hợp lệ từ body (bỏ theater_chain nếu client gửi vào)
-//     const {
-//       title,
-//       description,
-//       discount_type,
-//       discount_value,
-//       start_date,
-//       end_date,
-//       max_usage,
-//       minimum_order_amount = 0,
-//       maximum_discount_amount = null,
-//       img_url,
-//     } = body;
-
-//     if (
-//       !title ||
-//       !discount_type ||
-//       discount_value == null ||
-//       !start_date ||
-//       !end_date ||
-//       max_usage == null ||
-//       !img_url
-//     ) {
-//       return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
-//     }
-
-//     // Tạo promotion mới, gán theater_chain từ user (không dùng client gửi)
-//     const promotion = await Promotion.create({
-//       title,
-//       description,
-//       discount_type,
-//       discount_value,
-//       start_date,
-//       end_date,
-//       max_usage,
-//       minimum_order_amount,
-//       maximum_discount_amount,
-//       img_url,
-//       theater_admin_id: user.userId,
-//       theater_chain: user.theater_chain,
-//     });
-
-//     return NextResponse.json({ message: 'Promotion created', promotion }, { status: 201 });
-//   } catch (error) {
-//     console.error('Error creating promotion:', error);
-//     return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
-//   }
-// }
-
-// export async function GET(req) {
-//   await connectToDatabase();
-
-//   let user = null;
-//   try {
-//     user = await getAuth(req);
-//   } catch (err) {
-//     // Không có token → user = null
-//   }
-
-//   try {
-//     let query = {};
-
-//     if (!user || user.role !== 'theater_admin') {
-//       // User hoặc Guest → chỉ lấy promotions còn hiệu lực
-//       const now = new Date();
-//       query.start_date = { $lte: now };
-//       query.end_date = { $gte: now };
-//     }
-//     // Theater Admin → query rỗng → lấy tất cả
-
-//     const promotions = await Promotion.find(query).sort({ createdAt: -1 });
-
-//     return NextResponse.json(promotions);
-//   } catch (err) {
-//     console.error('Error loading promotions:', err);
-//     return NextResponse.json({ message: 'Error loading promotions' }, { status: 500 });
-//   }
-// }
-
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import Promotion from '@/models/Promotion';
@@ -104,7 +8,7 @@ export async function POST(req) {
   await connectToDatabase();
 
   const user = await getAuth(req);
-  console.log('Authenticated user:', user);
+  // console.log('Authenticated user:', user);
 
   if (!user || user.role !== 'theater_admin') {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
@@ -154,7 +58,7 @@ export async function POST(req) {
 
     return NextResponse.json({ message: 'Promotion created', promotion }, { status: 201 });
   } catch (error) {
-    console.error('Error creating promotion:', error);
+    // console.error('Error creating promotion:', error);
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
   }
 }
@@ -175,8 +79,8 @@ export async function GET(req) {
     const page = searchParams.get('page'); // 'payment' hoặc 'dashboard'
     const showtimeId = searchParams.get('showtimeId'); // FE gửi showtimeId khi payment
 
-    console.log("page:", page);
-    console.log("showtimeId:", showtimeId);
+    // console.log("page:", page);
+    // console.log("showtimeId:", showtimeId);
 
 
     let query = {};
@@ -215,7 +119,7 @@ export async function GET(req) {
 
     return NextResponse.json(promotions);
   } catch (err) {
-    console.error('Error loading promotions:', err);
+    // console.error('Error loading promotions:', err);
     return NextResponse.json({ message: 'Error loading promotions' }, { status: 500 });
   }
 }

@@ -16,7 +16,7 @@ export async function GET(request, { params }) {
 
     return NextResponse.json(user);
   } catch (error) {
-    console.error('Get user error:', error);
+    // console.error('Get user error:', error);
     return NextResponse.json(
       { message: 'Failed to fetch user' },
       { status: 500 }
@@ -44,7 +44,7 @@ export async function PUT(request, { params }) {
 
     return NextResponse.json(updatedUser);
   } catch (error) {
-    console.error('Update user error:', error);
+    // console.error('Update user error:', error);
     return NextResponse.json(
       { message: 'Failed to update user' },
       { status: 500 }
@@ -69,7 +69,7 @@ export async function DELETE(request, { params }) {
       { status: 200 }
     );
   } catch (error) {
-    console.error('Delete user error:', error);
+    // console.error('Delete user error:', error);
     return NextResponse.json(
       { message: 'Failed to delete user' },
       { status: 500 }

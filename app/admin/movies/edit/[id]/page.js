@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect, use, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { getMovieById, updateMovie } from '../../../../../utils/movieApi';
 import AdminGuard from '../../../../../components/AdminGuard';
@@ -92,7 +92,7 @@ export default function EditMoviePage({ params }) {
 
   useEffect(() => {
     fetchMovie();
-  }, [unwrappedParams.id]);
+  }, []);
 
   const fetchMovie = async () => {
     try {
@@ -100,6 +100,7 @@ export default function EditMoviePage({ params }) {
       const response = await getMovieById(unwrappedParams.id);
       if (response.success) {
         const data = response.data;
+  
         // Parse runtime
         let hour = '', minute = '';
         if (data.runtime) {
@@ -111,6 +112,7 @@ export default function EditMoviePage({ params }) {
         }
         setRuntimeHour(hour);
         setRuntimeMinute(minute);
+  
         // Parse releaseDate to yyyy-mm-dd
         let releaseDate = '';
         if (data.releaseDate) {
@@ -121,11 +123,17 @@ export default function EditMoviePage({ params }) {
             releaseDate = data.releaseDate;
           }
         }
+  
         // Parse genre to array
         let genreArr = [];
         if (data.genre) {
-          genreArr = data.genre.split(',').map(g => g.trim()).filter(Boolean).map(g => GENRE_OPTIONS.find(opt => opt.value === g) || { value: g, label: g });
+          genreArr = data.genre
+            .split(',')
+            .map(g => g.trim())
+            .filter(Boolean)
+            .map(g => GENRE_OPTIONS.find(opt => opt.value === g) || { value: g, label: g });
         }
+  
         setGenreOptions(genreArr);
         setFormData({
           ...data,
@@ -140,6 +148,9 @@ export default function EditMoviePage({ params }) {
       setLoading(false);
     }
   };
+
+  
+  
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;

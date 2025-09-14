@@ -104,7 +104,7 @@ export async function PATCH(req, { params }) {
 
     return NextResponse.json(booking, { status: 200 });
   } catch (err) {
-    console.error('Error updating booking:', err);
+    // console.error('Error updating booking:', err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

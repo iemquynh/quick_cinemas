@@ -4,7 +4,7 @@ import Movie from '../../../../models/Movie';
 
 // GET /api/movies/[id] - Lấy phim theo ID
 export async function GET(request, { params }) {
-    console.log('API GET movie, params:', params);
+    // console.log('API GET movie, params:', params);
   try {
     await connectToDatabase();
     const movie = await Movie.findById(params.id);
@@ -21,7 +21,7 @@ export async function GET(request, { params }) {
       data: movie
     });
   } catch (error) {
-    console.error('Error fetching movie:', error);
+    // console.error('Error fetching movie:', error);
     return NextResponse.json(
       { success: false, message: 'Failed to fetch movie' },
       { status: 500 }
@@ -79,7 +79,7 @@ export async function PUT(request, { params }) {
     });
     
   } catch (error) {
-    console.error('Error updating movie:', error);
+    // console.error('Error updating movie:', error);
     return NextResponse.json(
       { success: false, message: 'Failed to update movie' },
       { status: 500 }
@@ -107,7 +107,7 @@ export async function DELETE(request, { params }) {
     });
     
   } catch (error) {
-    console.error('Error deleting movie:', error);
+    // console.error('Error deleting movie:', error);
     return NextResponse.json(
       { success: false, message: 'Failed to delete movie' },
       { status: 500 }

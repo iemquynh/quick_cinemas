@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useAdmin } from "@/hooks/useCurrentUser";
-import AdminGuard from "@/components/AdminGuard";
+// import AdminGuard from "@/components/AdminGuard";
+import Image from "next/image";
 
 const STATUS_TABS = [
   { key: "pending", label: "Chờ xác nhận" },
@@ -69,7 +70,7 @@ export default function AdminTicketsPage() {
                   <div className="mb-1">Ghế: {b.seats.map(s => s.seat_id).join(", ")}</div>
                   <div className="mb-1">Ngày đặt: {new Date(b.createdAt).toLocaleString()}</div>
                   {b.payment_proof_url && (
-                    <div className="mb-1">Ảnh giao dịch:<br /><img src={b.payment_proof_url} alt="Ảnh giao dịch" className="mt-1 max-h-32 rounded border" /></div>
+                    <div className="mb-1">Ảnh giao dịch:<br /><Image src={b.payment_proof_url} alt="Ảnh giao dịch" className="mt-1 max-h-32 rounded border" /></div>
                   )}
                 </div>
                 {tab === "pending" && (

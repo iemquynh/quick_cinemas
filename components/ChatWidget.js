@@ -5,6 +5,7 @@ import EmojiPicker from "emoji-picker-react";
 import { X } from "lucide-react";
 import useChatMessages from "../hooks/useChatMessages";
 import Link from "next/link";
+import Image from "next/image";
 
 
 export default function ChatWidget({ booking, user, onClose }) {

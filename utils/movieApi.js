@@ -12,7 +12,7 @@ export const getAllMovies = async () => {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Error fetching movies:', error);
+    // console.error('Error fetching movies:', error);
     throw error;
   }
 };
@@ -24,7 +24,7 @@ export const getMovieById = async (id) => {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Error fetching movie:', error);
+    // console.error('Error fetching movie:', error);
     throw error;
   }
 };
@@ -42,7 +42,7 @@ export const createMovie = async (movieData) => {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Error creating movie:', error);
+    // console.error('Error creating movie:', error);
     throw error;
   }
 };
@@ -60,7 +60,7 @@ export const updateMovie = async (id, movieData) => {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Error updating movie:', error);
+    // console.error('Error updating movie:', error);
     throw error;
   }
 };
@@ -74,7 +74,7 @@ export const deleteMovie = async (id) => {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Error deleting movie:', error);
+    // console.error('Error deleting movie:', error);
     throw error;
   }
 }; 

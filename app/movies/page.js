@@ -1,6 +1,7 @@
 "use client"
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 
 
 export default function MoviesPage() {
@@ -34,7 +35,7 @@ export default function MoviesPage() {
               >
                 <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                   <div className="relative">
-                    <img 
+                    <img
                       src={movie.poster} 
                       alt={movie.title}
                       className="w-full h-64 object-cover"

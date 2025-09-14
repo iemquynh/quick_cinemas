@@ -8,7 +8,7 @@ export async function GET() {
     const users = await User.find();
     return NextResponse.json(users);
   } catch (error) {
-    console.error('Get users error:', error);
+    // console.error('Get users error:', error);
     return NextResponse.json(
       { message: 'Failed to fetch users' },
       { status: 500 }
@@ -68,7 +68,7 @@ export async function POST(request) {
       }
     });
   } catch (error) {
-    console.error('Registration error:', error);
+    // console.error('Registration error:', error);
     return NextResponse.json(
       { message: 'Failed to create user', error: error.message },
       { 

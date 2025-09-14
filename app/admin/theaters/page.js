@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import AdminGuard from "@/components/AdminGuard";
-import { FaEdit, FaTrash, FaSave, FaTimes } from "react-icons/fa";
+import { FaEdit, FaSave, FaTimes } from "react-icons/fa";
 import { useAdmin } from "@/hooks/useCurrentUser";
 import Link from "next/link";
 import Swal from "sweetalert2";
@@ -28,7 +28,8 @@ export default function TheaterListPage() {
   async function fetchTheaters() {
     setLoading(true);
     try {
-      const res = await fetch("/api/theaters");
+      // admin lấy tất cả (kể cả hidden)
+      const res = await fetch("/api/theaters?all=true");
       const data = await res.json();
       setTheaters(data);
       setLoading(false);
@@ -38,27 +39,34 @@ export default function TheaterListPage() {
     }
   }
 
-  async function handleDelete(id) {
+  async function handleToggleStatus(theater) {
     const result = await Swal.fire({
       title: "Are you sure?",
-      text: "This theater will be permanently deleted!",
+      text:
+        theater.status === "active"
+          ? "This theater will be hidden."
+          : "This theater will be visible again.",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
       cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, delete it!",
+      confirmButtonText: "Yes, confirm!",
     });
 
     if (!result.isConfirmed) return;
 
-    const res = await fetch(`/api/theaters/${id}`, { method: "DELETE" });
+    const res = await fetch(`/api/theaters/${theater._id}`, { method: "DELETE" });
     if (res.ok) {
-      setTheaters(theaters.filter((t) => t._id !== id));
+      const updated = await res.json();
+      setTheaters(theaters.map((t) => (t._id === updated._id ? updated : t)));
       Swal.fire({
         toast: true,
         position: "top-end",
         icon: "success",
-        title: "Theater deleted successfully",
+        title:
+          updated.status === "active"
+            ? "Theater is now visible"
+            : "Theater has been hidden",
         showConfirmButton: false,
         timer: 2000,
       });
@@ -67,7 +75,7 @@ export default function TheaterListPage() {
         toast: true,
         position: "top-end",
         icon: "error",
-        title: "Delete failed",
+        title: "Action failed",
         showConfirmButton: false,
         timer: 2000,
       });
@@ -80,9 +88,7 @@ export default function TheaterListPage() {
       name: theater.name || "",
       address: theater.address || "",
       rooms: theater.rooms || 1,
-      screenTypes: Array.isArray(theater.screenTypes)
-        ? theater.screenTypes
-        : [],
+      screenTypes: Array.isArray(theater.screenTypes) ? theater.screenTypes : [],
     });
   }
 
@@ -298,11 +304,19 @@ export default function TheaterListPage() {
                                 <FaEdit />
                               </button>
                               <button
-                                className="btn btn-xs bg-red-600 hover:bg-red-700 text-white"
-                                onClick={() => handleDelete(theater._id)}
-                                title="Delete"
+                                className={`btn btn-xs ${
+                                  theater.status === "active"
+                                    ? "bg-yellow-600 hover:bg-yellow-700"
+                                    : "bg-green-600 hover:bg-green-700"
+                                } text-white`}
+                                onClick={() => handleToggleStatus(theater)}
+                                title={
+                                  theater.status === "active"
+                                    ? "Hide"
+                                    : "Show"
+                                }
                               >
-                                <FaTrash />
+                                {theater.status === "active" ? "Hide" : "Show"}
                               </button>
                             </>
                           )}

@@ -9,7 +9,7 @@ export const userService = {
       const response = await api.post(API_ENDPOINTS.USERS.BASE, userData);
       return response;
     } catch (error) {
-      console.error('Create user error:', error);
+      // console.error('Create user error:', error);
       throw new Error(error.message || 'Failed to create user');
     }
   },
@@ -19,7 +19,7 @@ export const userService = {
     try {
       return await api.get(API_ENDPOINTS.USERS.BASE);
     } catch (error) {
-      console.error('Get users error:', error);
+      // console.error('Get users error:', error);
       throw new Error(error.message || 'Failed to fetch users');
     }
   },
@@ -29,7 +29,7 @@ export const userService = {
     try {
       return await api.get(API_ENDPOINTS.USERS.BY_ID(userId));
     } catch (error) {
-      console.error('Get user error:', error);
+      // console.error('Get user error:', error);
       throw new Error(error.message || 'Failed to fetch user');
     }
   },
@@ -39,7 +39,7 @@ export const userService = {
     try {
       return await api.put(API_ENDPOINTS.USERS.BY_ID(userId), updateData);
     } catch (error) {
-      console.error('Update user error:', error);
+      // console.error('Update user error:', error);
       throw new Error(error.message || 'Failed to update user');
     }
   },
@@ -49,7 +49,7 @@ export const userService = {
     try {
       return await api.delete(API_ENDPOINTS.USERS.BY_ID(userId));
     } catch (error) {
-      console.error('Delete user error:', error);
+      // console.error('Delete user error:', error);
       throw new Error(error.message || 'Failed to delete user');
     }
   }

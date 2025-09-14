@@ -65,22 +65,22 @@ export async function POST(req, { params }) {
     for (const seatId of seatIds) {
       const seat = showtime.seats_layout.find(s => s.seat_id === seatId);
       if (!seat) {
-        console.log(`DEBUG: Seat ${seatId} not found in layout.`);
+        // console.log(`DEBUG: Seat ${seatId} not found in layout.`);
         unavailableSeats.push(seatId); 
         continue;
       }
 
       const isHeldByOther = seat.pending_user && seat.pending_user.toString() !== userId.toString();
       
-      console.log(`DEBUG: Checking seat ${seat.seat_id}:
-        - Status: ${seat.status}
-        - Pending User in DB: ${seat.pending_user?.toString()}
-        - Current User from Token: ${userId}
-        - Is Held By Other?: ${isHeldByOther}`);
+      // console.log(`DEBUG: Checking seat ${seat.seat_id}:
+      //   - Status: ${seat.status}
+      //   - Pending User in DB: ${seat.pending_user?.toString()}
+      //   - Current User from Token: ${userId}
+      //   - Is Held By Other?: ${isHeldByOther}`);
 
       // Ghế không khả dụng nếu: đã được đặt (booked), hoặc đang được người khác giữ (pending by other)
       if (seat.status === 'booked' || (seat.status === 'pending' && isHeldByOther)) {
-        console.log(`DEBUG: Seat ${seat.seat_id} is considered UNAVAILABLE.`);
+        // console.log(`DEBUG: Seat ${seat.seat_id} is considered UNAVAILABLE.`);
         unavailableSeats.push(seatId);
       }
     }
@@ -109,7 +109,7 @@ export async function POST(req, { params }) {
       seats: seatIds
     });
   } catch (error) {
-    console.error('Hold seat error:', error);
+    // console.error('Hold seat error:', error);
     return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
   }
 } 

@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Header from '@/components/Header';
+import Image from 'next/image';
 
 const PLACEHOLDER_IMGS = [
   'https://png.pngtree.com/png-clipart/20190516/original/pngtree-white-cinema-theatre-screen-with-red-curtains-and-chairs-png-image_3662495.jpg',

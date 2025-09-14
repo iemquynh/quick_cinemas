@@ -1,3 +1,10 @@
+import pwa from 'next-pwa'
+
+const withPWA = pwa({
+    dest: 'public',
+    buildExcludes: [/app-build-manifest\.json$/,/middleware-manifest\.json$/],
+    register: true,
+})
 const nextConfig = {
     output: 'standalone',
     sassOptions: {
@@ -5,4 +12,4 @@ const nextConfig = {
     },
 };
 
-export default nextConfig
+export default withPWA(nextConfig)

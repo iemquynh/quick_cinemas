@@ -76,12 +76,12 @@ export async function POST(req) {
   } else {
     showtimeData.seats_layout = generateSeatsLayout(theater.theater_chain);
   }
-  console.log('DEBUG seats_layout:', Array.isArray(showtimeData.seats_layout), typeof showtimeData.seats_layout[0]);
+  // console.log('DEBUG seats_layout:', Array.isArray(showtimeData.seats_layout), typeof showtimeData.seats_layout[0]);
   try {
     const showtime = await Showtime.create(showtimeData);
     return new Response(JSON.stringify(showtime), { status: 201 });
   } catch (error) {
-    console.error('Showtime create error:', error.message);
+    // console.error('Showtime create error:', error.message);
     return new Response(JSON.stringify({ error: 'Showtime validation failed' }), { status: 500 });
   }
 }
@@ -99,7 +99,7 @@ export async function GET(req) {
     const token = authHeader?.split(' ')[1];
 
     // Xây dựng query
-    const query = {}; 
+    const query = {};
     if (movieId) query.movie_id = new mongoose.Types.ObjectId(movieId);
     if (theaterId) query.theater_id = new mongoose.Types.ObjectId(theaterId);
     if (date) {
@@ -111,9 +111,21 @@ export async function GET(req) {
       };
     }
 
+    // let showtimes = await Showtime.find(query)
+    //   .populate('movie_id', 'title poster')
+    //   .populate('theater_id', 'name address')
+
     let showtimes = await Showtime.find(query)
       .populate('movie_id', 'title poster')
-      .populate('theater_id', 'name address')
+      .populate({
+        path: 'theater_id',
+        select: 'name address status',
+        match: { status: 'active' }, // chỉ lấy rạp active
+      });
+
+    // Bỏ các showtime không có theater (do match đã loại)
+    showtimes = showtimes.filter(st => st.theater_id);
+
 
     if (token) {
       try {

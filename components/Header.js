@@ -9,6 +9,7 @@ import { io } from 'socket.io-client';
 import ChatWidget from './ChatWidget';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link.js';
+import Image from 'next/image.js';
 
 
 const navigation = [
@@ -67,7 +68,7 @@ export default function Header() {
         .then(data => setNotifications(data));
     }, 10000); // 1 giây/lần
     return () => clearInterval(interval);
-  }, [user?._id]);
+  }, [user, user?._id]);
 
   // Lắng nghe realtime booking_update (Socket.IO)
   useEffect(() => {
@@ -182,100 +183,6 @@ export default function Header() {
               <div className="ml-4 flex items-center md:ml-6 space-x-4">
                 {/* Notification cho user */}
                 {user && user.role === 'user' && (
-                  // <div className="relative">
-                  //   <button className="btn btn-ghost btn-circle" onClick={() => setShowNotif((v) => !v)}>
-                  //     <div className="indicator">
-                  //       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  //         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                  //           d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                  //       </svg>
-                  //       {unreadCount > 0 && (
-                  //         <span className="badge badge-xs badge-primary indicator-item">{unreadCount}</span>
-                  //       )}
-                  //     </div>
-                  //   </button>
-
-                  //   {showNotif && (
-                  //     <div ref={notifRef} className="absolute right-0 mt-2 w-80 bg-white text-black rounded shadow-lg z-50 max-h-96 overflow-y-auto">
-                  //       <div className="p-2 font-bold border-b flex justify-between items-center">
-                  //         <span>Thông báo</span>
-                  //         {notifications.length > 0 && (
-                  //           <button
-                  //             onClick={async () => {
-                  //               try {
-                  //                 const res = await fetch(`/api/notifications?user_id=${user._id}`, {
-                  //                   method: 'DELETE',
-                  //                 });
-                  //                 if (res.ok) {
-                  //                   setNotifications([]);
-                  //                 } else {
-                  //                   console.error('Failed to delete notifications');
-                  //                 }
-                  //               } catch (error) {
-                  //                 console.error('Error deleting notifications:', error);
-                  //               }
-                  //             }}
-                  //             className="text-xs text-blue-600 hover:text-blue-800"
-                  //           >
-                  //             Xóa tất cả
-                  //           </button>
-                  //         )}
-                  //       </div>
-
-                  //       {notifications.length === 0 ? (
-                  //         <div className="p-4 text-gray-500 text-center">Không có thông báo</div>
-                  //       ) : notifications.map((n, index) => (
-                  //         <div
-                  //           key={n._id || index}
-                  //           className={`p-3 border-b hover:bg-blue-50 cursor-pointer ${n.read ? 'bg-gray-100' : 'bg-white font-semibold'}`}
-                  //           onClick={() => {
-                  //             if (n.type === 'new_message') {
-                  //               handleMessageNotificationClick(n.booking_id);
-                  //             } else {
-                  //               handleReadNotification(n, index);
-                  //             }
-                  //           }}
-                  //         >
-                  //           <div className="flex justify-between items-start">
-                  //             <div className="flex-1">
-                  //               <p className="text-sm text-gray-900 font-medium">
-                  //                 {n.type === 'booking_confirmed'
-                  //                   ? 'Vé đã xác nhận'
-                  //                   : n.type === 'booking_cancelled'
-                  //                     ? 'Vé bị từ chối'
-                  //                     : n.type === 'booking_pending'
-                  //                       ? 'Vé đang chờ xác nhận'
-                  //                       : 'Thông báo mới'}
-                  //               </p>
-                  //               <p className="text-xs text-gray-600 mt-1">{n.message}</p>
-                  //               <p className="text-xs text-gray-400 mt-1">
-                  //                 {n.timestamp || n.created_at
-                  //                   ? new Date(n.timestamp || n.created_at).toLocaleString('vi-VN')
-                  //                   : 'Không xác định'}
-                  //               </p>
-                  //             </div>
-
-                  //             {/* Nút xoá */}
-                  //             <button
-                  //               onClick={e => {
-                  //                 e.stopPropagation();
-                  //                 fetch(`/api/notifications/${n._id}`, { method: 'DELETE' })
-                  //                   .then(() => {
-                  //                     setNotifications(prev => prev.filter((_, i) => i !== index));
-                  //                   })
-                  //                   .catch(err => console.error('Lỗi xoá thông báo:', err));
-                  //               }}
-                  //               className="ml-2 text-gray-400 hover:text-gray-600"
-                  //             >
-                  //               ×
-                  //             </button>
-
-                  //           </div>
-                  //         </div>
-                  //       ))}
-                  //     </div>
-                  //   )}
-                  // </div>
                   <NotificationBell
                     token={token}
                     user={user}
@@ -347,97 +254,15 @@ export default function Header() {
             {/* Mobile: ghost, join us, hamburger menu */}
             <div className="flex md:hidden items-center ml-4 space-x-2">
               {/* Notification button (mobile) */}
-              <div className="relative">
-                <button className="btn btn-ghost btn-circle" onClick={() => setShowNotif((v) => !v)}>
-                  <div className="indicator">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                    </svg>
-                    {unreadCount > 0 && (
-                      <span className="badge badge-xs badge-primary indicator-item">{unreadCount}</span>
-                    )}
-                  </div>
-                </button>
+              {/* Notification cho user */}
+              {user && user.role === 'user' && (
+                  <NotificationBell
+                    token={token}
+                    user={user}
+                    onMessageNotificationClick={handleMessageNotificationClick}
+                  />
 
-                {showNotif && (
-                  <div ref={notifRef} className="absolute right-0 mt-2 w-80 bg-white text-black rounded shadow-lg z-50 max-h-96 overflow-y-auto">
-                    <div className="p-2 font-bold border-b flex justify-between items-center">
-                      <span>Thông báo</span>
-                      {notifications.length > 0 && (
-                        <button
-                          onClick={async () => {
-                            try {
-                              const res = await fetch(`/api/notifications?user_id=${user._id}`, {
-                                method: 'DELETE',
-                              });
-                              if (res.ok) {
-                                setNotifications([]);
-                              } else {
-                                console.error('Xóa thất bại');
-                              }
-                            } catch (error) {
-                              console.error('Lỗi xóa:', error);
-                            }
-                          }}
-                          className="text-xs text-blue-600 hover:text-blue-800"
-                        >
-                          Xóa tất cả
-                        </button>
-                      )}
-                    </div>
-
-                    {notifications.length === 0 ? (
-                      <div className="p-4 text-gray-500 text-center">Không có thông báo</div>
-                    ) : notifications.map((n, index) => (
-                      <div
-                        key={n._id || index}
-                        className={`p-3 border-b hover:bg-blue-50 cursor-pointer ${n.read ? 'bg-gray-100' : 'bg-white font-semibold'}`}
-                        onClick={() => {
-                          if (n.type === 'new_message') {
-                            handleMessageNotificationClick(n.booking_id);
-                          } else {
-                            handleReadNotification(n, index);
-                          }
-                        }}
-                      >
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <p className="text-sm text-gray-900 font-medium">
-                              {n.type === 'booking_confirmed'
-                                ? 'Vé đã xác nhận'
-                                : n.type === 'booking_cancelled'
-                                  ? 'Vé bị từ chối'
-                                  : n.type === 'booking_pending'
-                                    ? 'Vé đang chờ xác nhận'
-                                    : 'Thông báo mới'}
-                            </p>
-                            <p className="text-xs text-gray-600 mt-1">{n.message}</p>
-                            <p className="text-xs text-gray-400 mt-1">
-                              {n.timestamp || n.created_at
-                                ? new Date(n.timestamp || n.created_at).toLocaleString('vi-VN')
-                                : 'Không xác định'}
-                            </p>
-                          </div>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              fetch(`/api/notifications/${n._id}`, { method: 'DELETE' })
-                                .then(() =>
-                                  setNotifications((prev) => prev.filter((_, i) => i !== index))
-                                )
-                                .catch(console.error);
-                            }}
-                            className="ml-2 text-gray-400 hover:text-gray-600"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
                 )}
-              </div>
 
 
               {/* User menu or Join Us (mobile) */}

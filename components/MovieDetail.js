@@ -7,104 +7,13 @@ import MovieComments from '../app/movies/[id]/MovieComments';
 import SiteFooter from "./SiteFooter";
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from "next/link";
+import Image from "next/image";
 
 function getYouTubeId(url) {
   const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
   const match = url.match(regExp);
   return (match && match[2].length === 11) ? match[2] : null;
 }
-
-// DateSelector chỉ còn chọn ngày, không còn filter theater
-// function DateSelector({ selectedDate, setSelectedDate, theaterSearch, setTheaterSearch, movieId }) {
-//   const [selected, setSelected] = useState(0);
-//   const [startIdx, setStartIdx] = useState(0);
-//   const daysToShow = 7;
-
-//   // Tạo mảng ngày từ hôm nay đến 3 tháng sau (~90 ngày)
-//   const days = [
-//     { label: "TODAY", date: new Date() },
-//     ...Array.from({ length: 89 }, (_, i) => {
-//       const d = new Date();
-//       d.setDate(d.getDate() + i + 1);
-//       // Sửa: clone object Date để không bị lỗi tham chiếu
-//       return {
-//         label: d.toLocaleDateString("en-GB", { weekday: "short", day: "2-digit", month: "short" }),
-//         date: new Date(d),
-//       };
-//     }),
-//   ];
-
-//   const canPrev = startIdx > 0;
-//   const canNext = startIdx + daysToShow < days.length;
-//   const visibleDays = days.slice(startIdx, startIdx + daysToShow);
-
-//   // Khi chọn ngày, cập nhật selectedDate ở cha
-//   const handleSelect = (realIdx, d) => {
-//     setSelected(realIdx);
-//     setSelectedDate(d.date);
-//   };
-
-//   useEffect(() => {
-//     // Khi mount, set ngày hôm nay
-//     setSelectedDate(days[0].date);
-//     console.log('days[0].date.toString()',days[0].date.toString());
-//     // eslint-disable-next-line
-//   }, []);
-
-//   return (
-//     <div className="mt-8 w-full flex flex-col items-center">
-//       <div className="flex justify-between items-center mb-4 w-full max-w-3xl">
-//         <div className="text-white text-base md:text-lg">
-//           Show me times for <span className="text-sky-400 cursor-pointer">Cinemas</span>
-//         </div>
-//         <input
-//           type="text"
-//           className="px-3 py-1 rounded-lg border border-gray-600 bg-[#1a2332] text-white text-base focus:outline-none min-w-[180px]"
-//           placeholder="Search theater..."
-//           value={theaterSearch}
-//           onChange={e => setTheaterSearch(e.target.value)}
-//         />
-//       </div>
-//       <div className="relative w-full max-w-3xl">
-//         <div className="flex items-center gap-2 justify-center overflow-x-auto no-scrollbar pb-2">
-//           <button
-//             className={`text-sky-400 px-2 py-1 text-xl ${!canPrev ? "opacity-30 cursor-not-allowed" : ""}`}
-//             aria-label="Prev"
-//             onClick={() => canPrev && setStartIdx(startIdx - 1)}
-//             disabled={!canPrev}
-//           >&lt;</button>
-//           {visibleDays.map((d, idx) => {
-//             const realIdx = startIdx + idx;
-//             return (
-//               <button
-//                 key={realIdx}
-//                 className={`flex flex-col items-center px-4 py-2 rounded-none font-medium transition-all
-//                   ${selected === realIdx
-//                     ? "text-sky-400 border-b-2 border-sky-400"
-//                     : "text-white/80 hover:text-sky-300"
-//                   }`}
-//                 onClick={() => handleSelect(realIdx, d)}
-//                 style={{ minWidth: 70 }}
-//               >
-//                 <span className="text-base font-semibold">{d.label === "TODAY" ? "TODAY" : d.label.split(',')[0] + ','}</span>
-//                 {d.label !== "TODAY" && (
-//                   <span className="text-sm mt-1">{d.label.split(',')[1]?.trim()}</span>
-//                 )}
-//               </button>
-//             );
-//           })}
-//           <button
-//             className={`text-sky-400 px-2 py-1 text-xl ${!canNext ? "opacity-30 cursor-not-allowed" : ""}`}
-//             aria-label="Next"
-//             onClick={() => canNext && setStartIdx(startIdx + 1)}
-//             disabled={!canNext}
-//           >&gt;</button>
-//         </div>
-//         <div className="border-b border-[#233554] absolute left-0 right-0 bottom-0" />
-//       </div>
-//     </div>
-//   );
-// }
 
 function DateSelector({ selectedDate, setSelectedDate }) {
   const [selected, setSelected] = useState(0);
@@ -398,7 +307,7 @@ export default function MovieDetail({
         )}
       </div>
       {/* Floating Card */}
-      <div className="absolute top-[calc(200px+5vw)] right-0 z-30 w-full px-4 md:px-0 max-w-6xl" style={{ marginTop: !isTheaterAdmin ? '-42px' : '10px' }}>
+      <div className="relative z-30 w-full px-4 md:px-0 max-w-6xl mx-auto mt-[calc(200px+5vw)]" style={{ marginTop: !isTheaterAdmin ? '-42px' : '-42px' }}>
         <div className="bg-opacity-95 rounded-lg shadow-2xl px-4 sm:px-6 md:px-10 py-6 md:py-8 w-full ">
           <div className="flex flex-col lg:flex-row items-start gap-6 md:gap-20 mx-auto">
             {/* Poster + Book button */}
@@ -491,11 +400,11 @@ export default function MovieDetail({
       </div>
 
       {/* Spacer with responsive height to avoid large blank on wide screens */}
-      <div className="pt-[600px] sm:pt-[700px] md:pt-[550px] lg:pt-[300px] xl:pt-[520px]" />
+      {/* <div className="min-h-[clamp(700px,85vh,1200px)] md:min-h-[clamp(350px,60vh,800px)] flex flex-col justify-end" /> */}
 
 
       {/* Comment Section Component */}
-      <MovieComments movieId={movieId} readOnly={user && (isSuperAdmin || isTheaterAdmin)} />
+      <MovieComments movieId={movieId} readOnly={user && (isSuperAdmin || isTheaterAdmin)} className="pt-[clamp(700px,85vh,1200px)] md:pt-[clamp(350px,60vh,800px)]" />
 
       {!(isSuperAdmin || isTheaterAdmin) && (
         <>

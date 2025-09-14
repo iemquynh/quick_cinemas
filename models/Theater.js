@@ -9,7 +9,8 @@ const TheaterSchema = new mongoose.Schema({
         type: String,
         enum: ['CGV', 'Lotte Cinema', 'Galaxy Cinema', 'BHD Star Cineplex', 'Beta Cinemas'],
         required: true
-    }
+    },
+    status: { type: String, enum: ['active', 'inactive'], default: 'active' }
 }, {
     timestamps: true
 })

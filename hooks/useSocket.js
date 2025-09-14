@@ -8,7 +8,7 @@ export function useSocket(token) {
   const socketRef = useRef();
 
   useEffect(() => {
-    console.log('Socket connecting with token:', token);
+    // console.log('Socket connecting with token:', token);
     if (!token) return;
 
     // Tạo kết nối Socket.IO
@@ -22,19 +22,19 @@ export function useSocket(token) {
 
     // Xử lý kết nối
     socketInstance.on('connect', () => {
-      console.log('Connected to Socket.IO server');
+      // console.log('Connected to Socket.IO server');
       setIsConnected(true);
     });
 
     // Xử lý ngắt kết nối
     socketInstance.on('disconnect', () => {
-      console.log('Disconnected from Socket.IO server');
+      // console.log('Disconnected from Socket.IO server');
       setIsConnected(false);
     });
 
     // Lắng nghe thông báo booking pending (cho theater admin)
     socketInstance.on('booking_pending', (notification) => {
-      console.log('[SOCKET] Received booking_pending notification:', notification);
+      // console.log('[SOCKET] Received booking_pending notification:', notification);
       setNotifications(prev => [notification, ...prev]);
       
       // Hiển thị toast notification
@@ -45,7 +45,7 @@ export function useSocket(token) {
 
     // Lắng nghe thông báo booking update (cho user)
     socketInstance.on('booking_update', (notification) => {
-      console.log('[SOCKET] Received booking_update notification:', notification);
+      // console.log('[SOCKET] Received booking_update notification:', notification);
       setNotifications(prev => [notification, ...prev]);
       
       // Hiển thị toast notification
@@ -56,7 +56,7 @@ export function useSocket(token) {
 
     // Xử lý lỗi
     socketInstance.on('connect_error', (error) => {
-      console.error('Socket connection error:', error);
+      // console.error('Socket connection error:', error);
       setIsConnected(false);
     });
 

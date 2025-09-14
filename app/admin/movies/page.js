@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getAllMovies, deleteMovie } from '../../../utils/movieApi';
 import Link from 'next/link';
 import { useAdmin } from '@/hooks/useCurrentUser';
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
+import Image from 'next/image';
 
 export default function AdminMoviesPage() {
   const { user, adminLoading } = useAdmin();
@@ -17,12 +18,6 @@ export default function AdminMoviesPage() {
   useEffect(() => {
     fetchMovies();
   }, []);
-
-  useEffect(() => {
-    if (user?.role === 'theater_admin') {
-      fetchShowtimesAndFilterMovies();
-    }
-  }, [user, movies]);
 
   const fetchMovies = async () => {
     try {
@@ -42,7 +37,7 @@ export default function AdminMoviesPage() {
     }
   };
 
-  const fetchShowtimesAndFilterMovies = async () => {
+  const fetchShowtimesAndFilterMovies = useCallback (async () => {
     try {
       const token = localStorage.getItem('auth-token');
       const showtimesRes = await fetch('/api/showtimes', { headers: { Authorization: `Bearer ${token}` } });
@@ -59,7 +54,13 @@ export default function AdminMoviesPage() {
     } catch (error) {
       console.error('Filter error', error);
     }
-  };
+  }, [user?.theater_chain]);
+
+  useEffect(() => {
+    if (user?.role === 'theater_admin') {
+      fetchShowtimesAndFilterMovies();
+    }
+  }, [user, movies, fetchShowtimesAndFilterMovies]);
 
   const filteredMovies = movies.filter(movie => {
     const q = search.trim().toLowerCase();
@@ -178,12 +179,12 @@ export default function AdminMoviesPage() {
                         <Link href={`/admin/movies/edit/${movie._id}`} className="flex-1 bg-gray-600 hover:bg-gray-700 text-white text-center py-2 px-3 rounded text-sm font-medium">
                           Edit
                         </Link>
-                        <button
+                        {/* <button
                           onClick={() => handleDelete(movie._id)}
                           className="flex-1 bg-error-content hover:bg-[#b91c1c] text-white py-2 px-3 rounded text-sm font-medium"
                         >
                           Delete
-                        </button>
+                        </button> */}
                         <Link href={`/movies/${movie._id}`} className="flex-1 bg-primary hover:bg-[#2563eb] text-white text-center py-2 px-3 rounded text-sm font-medium">
                           View
                         </Link>

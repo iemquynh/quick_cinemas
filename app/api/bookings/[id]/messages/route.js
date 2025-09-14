@@ -14,7 +14,7 @@ export async function POST(req, { params }) {
   await connectToDatabase();
   const { id } = params;
   const { from, to, content } = await req.json();
-  console.log("POST /api/bookings/[id]/messages", { id, from, to, content });
+  // console.log("POST /api/bookings/[id]/messages", { id, from, to, content });
   if (!id || !from || !to || !content) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
@@ -30,7 +30,7 @@ export async function POST(req, { params }) {
     });
     return NextResponse.json(message);
   } catch (err) {
-    console.error("Error creating message:", err);
+    // console.error("Error creating message:", err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 } 

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAdmin } from '@/hooks/useCurrentUser';
 import Link from 'next/link';
 
@@ -10,13 +10,6 @@ export default function TheaterAdminPage() {
     showtimes: 0,
     theaters: 0
   });
-
-  useEffect(() => {
-    if (user) {
-      fetchAllMoviesStats();
-      fetchStats();
-    }
-  }, [user]);
 
   const fetchAllMoviesStats = async () => {
     try {
@@ -32,18 +25,19 @@ export default function TheaterAdminPage() {
     }
   };
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       const token = localStorage.getItem('auth-token');
       const [showtimesRes, theatersRes] = await Promise.all([
         fetch('/api/showtimes', { headers: { Authorization: `Bearer ${token}` } }),
         fetch('/api/theaters', { headers: { Authorization: `Bearer ${token}` } })
       ]);
+  
       const showtimesData = await showtimesRes.json();
       const theatersData = await theatersRes.json();
-
+  
       const adminChain = (user?.theater_chain || '').split(' ')[0]?.toLowerCase();
-
+  
       const filteredShowtimes = Array.isArray(showtimesData)
         ? showtimesData.filter(st => {
             const theaterName = st.theater_id?.name || '';
@@ -51,14 +45,14 @@ export default function TheaterAdminPage() {
             return theaterChain === adminChain;
           })
         : [];
-
+  
       const filteredTheaters = Array.isArray(theatersData)
         ? theatersData.filter(theater => {
             const chain = (theater.name || '').split(' ')[0]?.toLowerCase();
             return chain === adminChain;
           })
         : [];
-
+  
       setStats(prev => ({
         ...prev,
         showtimes: filteredShowtimes.length,
@@ -67,7 +61,15 @@ export default function TheaterAdminPage() {
     } catch (error) {
       console.error('Error fetching stats:', error);
     }
-  };
+  }, [user?.theater_chain]);
+
+  useEffect(() => {
+    if (user) {
+      fetchAllMoviesStats();
+      fetchStats();
+    }
+  }, [user, fetchStats]);
+  
 
   if (loading) {
     return (

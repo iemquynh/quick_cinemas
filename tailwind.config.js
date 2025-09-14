@@ -12,6 +12,12 @@ module.exports = {
         'gradient-conic':
           'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
       },
+      fontFamily: {
+        sans: ['"Nata Sans"', 'sans-serif']
+        // sans: [
+        //    '-apple-system'
+        // ]
+      }
     },
   },
   plugins: [require("daisyui")],

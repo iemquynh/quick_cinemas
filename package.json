@@ -8,6 +8,7 @@
     "dev": "node server.js",
     "build": "next build",
     "start": "NODE_ENV=production node server.js",
+    "start1": "next start",
     "lint": "next lint",
     "init-admin": "node scripts/init-admin.mjs"
   },
@@ -22,12 +23,16 @@
     "dayjs": "^1.11.13",
     "dotenv": "^16.5.0",
     "emoji-picker-react": "^4.13.2",
+    "framer-motion": "^12.23.12",
+    "idb": "^8.0.3",
     "jsonwebtoken": "^9.0.2",
     "lodash.isequal": "^4.5.0",
     "lucide-react": "^0.525.0",
+    "minimatch": "^10.0.3",
     "mongoose": "^8.15.0",
     "next": "15.3.2",
     "next-auth": "^4.24.11",
+    "next-pwa": "^5.6.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
@@ -42,6 +47,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@types/minimatch": "^6.0.0",
     "@types/node": "^20",
     "@types/react": "^19.1.4",
     "@types/react-dom": "^19.1.5",
@@ -51,6 +57,6 @@
     "eslint-config-next": "15.3.2",
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.17",
-    "typescript": "^5"
+    "typescript": "^5.9.2"
   }
 }

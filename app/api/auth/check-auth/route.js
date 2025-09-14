@@ -9,7 +9,7 @@ export async function GET(request) {
     const authHeader = request.headers.get('authorization');
     const token = authHeader?.split(' ')[1];
     
-    console.log('check-auth - Token:', token);
+    // console.log('check-auth - Token:', token);
     
     if (!token) {
       return NextResponse.json(
@@ -47,7 +47,7 @@ export async function GET(request) {
     });
     
   } catch (error) {
-    console.error('Error checking auth status:', error);
+    // console.error('Error checking auth status:', error);
     
     if (error.name === 'JsonWebTokenError') {
       return NextResponse.json(

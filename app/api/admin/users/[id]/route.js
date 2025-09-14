@@ -1,15 +1,15 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import User from '@/models/User';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/utils/auth';
+import { getAuth } from '@/utils/auth';
 
 export async function PUT(request, { params }) {
   try {
-    const session = await getServerSession(authOptions);
-    
-    // Kiểm tra xem người dùng đã đăng nhập và là admin không
-    if (!session || !session.user.role) {
+    // Lấy user từ token
+    const user = await getAuth(request);
+
+    // Kiểm tra đăng nhập và quyền admin
+    if (!user || user.role !== 'admin') {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -17,6 +17,7 @@ export async function PUT(request, { params }) {
     }
 
     await connectToDatabase();
+
     const { id } = params;
     const { role } = await request.json();
 
@@ -44,10 +45,10 @@ export async function PUT(request, { params }) {
       }
     });
   } catch (error) {
-    console.error('Error updating user role:', error);
+    // console.error('Error updating user role:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
     );
   }
-} 
+}

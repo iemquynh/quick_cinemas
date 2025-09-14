@@ -52,7 +52,7 @@ export async function PATCH(req, { params }) {
 
     return NextResponse.json(updated);
   } catch (err) {
-    console.error('Error updating promotion:', err);
+    // console.error('Error updating promotion:', err);
     return NextResponse.json({ message: 'Error updating promotion' }, { status: 500 });
   }
 }
@@ -77,7 +77,7 @@ export async function DELETE(req, { params }) {
 
     return NextResponse.json({ message: 'Deleted successfully' }, { status: 200 });
   } catch (err) {
-    console.error('Error deleting promotion:', err);
+    // console.error('Error deleting promotion:', err);
     return NextResponse.json({ message: 'Error deleting promotion' }, { status: 500 });
   }
 }

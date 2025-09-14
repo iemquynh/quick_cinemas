@@ -4,3 +4,7 @@
 @plugin "daisyui";
 
 
+body {
+    @apply font-sans;
+  }
+  

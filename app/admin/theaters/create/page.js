@@ -93,8 +93,8 @@ export default function CreateTheaterPage() {
         <h2 className="text-xl font-bold mb-4 text-center">Create a theater</h2>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Theater's name</label>
-            <input className="input input-bordered w-full" placeholder="Theater's name" value={name} onChange={e => setName(e.target.value)} required />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Theater&apos;s name</label>
+            <input className="input input-bordered w-full" placeholder="Theater&apos;s name" value={name} onChange={e => setName(e.target.value)} required />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>

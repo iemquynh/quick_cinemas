@@ -16,7 +16,7 @@ function decodeTokenFromRequest(request) {
   try {
     return jwt.verify(token, JWT_SECRET);
   } catch (error) {
-    console.error('❌ Failed to decode token:', error.message);
+    // console.error('❌ Failed to decode token:', error.message);
     return null;
   }
 }
@@ -104,7 +104,7 @@ export async function GET(request) {
     return NextResponse.json(movies);
 
   } catch (error) {
-    console.error('❌ Error fetching movies:', error.message);
+    // console.error('❌ Error fetching movies:', error.message);
     return NextResponse.json(
       { success: false, message: 'Failed to fetch movies', error: error.message },
       { status: 500 }
@@ -121,7 +121,7 @@ export async function POST(request) {
 
     return NextResponse.json({ success: true, movie }, { status: 201 });
   } catch (error) {
-    console.error("❌ Error creating movie:", error.message);
+    // console.error("❌ Error creating movie:", error.message);
     return NextResponse.json(
       { success: false, message: "Failed to create movie", error: error.message },
       { status: 500 }

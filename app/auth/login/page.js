@@ -1,8 +1,7 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import styles from "./SignIn.module.css";
+import React, { useState } from "react";
 import { FiEye, FiEyeOff, FiHome } from "react-icons/fi";
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function SignIn() {
   const router = useRouter();
@@ -18,130 +17,153 @@ export default function SignIn() {
 
     try {
       const formData = new FormData(e.target);
-      const email = formData.get('email');
-      const password = formData.get('password');
+      const email = formData.get("email");
+      const password = formData.get("password");
 
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
       const data = await res.json();
 
-      if (!res.ok) {
-        throw new Error(data.message || 'Login failed');
-      }
+      if (!res.ok) throw new Error(data.message || "Login failed");
 
-      // Sau khi nhận response từ API login:
-      localStorage.setItem('auth-token', data.token); // <-- BẮT BUỘC PHẢI CÓ DÒNG NÀY
-      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem("auth-token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
-      // Lấy redirect URL từ query params
-      const redirectUrl = searchParams.get('redirect');
+      const redirectUrl = searchParams.get("redirect");
+      const isAdmin = ["admin", "super_admin", "theater_admin"].includes(
+        data.user.role
+      );
 
-      // Chỉ cho phép admin/super_admin/theater_admin truy cập admin
-      const isAdmin = ['admin', 'super_admin', 'theater_admin'].includes(data.user.role);
-
-      if (redirectUrl && redirectUrl.startsWith('/admin')) {
-        if (isAdmin) {
-          router.push(redirectUrl);
-        } else {
-          // Nếu không phải admin, về trang chủ hoặc trang user
-          router.push('/');
-        }
+      if (redirectUrl && redirectUrl.startsWith("/admin")) {
+        router.push(isAdmin ? redirectUrl : "/");
       } else if (redirectUrl) {
         router.push(redirectUrl);
-      } else if (data.user.role === 'super_admin') {
-        router.push('/admin/theater-admins');
-      } else if (data.user.role === 'theater_admin') {
-        router.push('/admin/dashboard');
-      } else if (data.user.role === 'admin') {
-        router.push('/admin');
+      } else if (data.user.role === "super_admin") {
+        router.push("/admin/theater-admins");
+      } else if (data.user.role === "theater_admin") {
+        router.push("/admin/dashboard");
+      } else if (data.user.role === "admin") {
+        router.push("/admin");
       } else {
-        router.push('/');
+        router.push("/");
       }
     } catch (error) {
-      console.error('Login error:', error);
-      setError(error.message || 'Login failed. Please try again.');
+      console.error("Login error:", error);
+      setError(error.message || "Login failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className={styles.signinContainer}>
-      <div className={styles.signinCard}>
-        <div className="flex justify-between items-center mb-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 p-4">
+      <div className="w-full max-w-md bg-[#0a1a2f] rounded-2xl shadow-xl p-6 sm:p-8">
+        {/* Header buttons */}
+        <div className="flex justify-between items-center mb-6">
           <button
             onClick={() => router.push("/")}
             aria-label="Go to homepage"
-            className="text-gray-600 hover:text-gray-900 text-2xl"
+            className="text-gray-200 hover:text-gray-400 text-2xl"
           >
             <FiHome />
           </button>
           <button
             onClick={() => window.history.back()}
-            className={styles.closeBtn + " text-gray-600 hover:text-gray-900 text-3xl"}
             aria-label="Close"
+            className="text-gray-200 hover:text-gray-400 text-2xl font-bold"
           >
             &times;
           </button>
         </div>
-        <h2 className={styles.signinTitle}>SIGN IN</h2>
-        {searchParams.get('redirect') && (
-          <p style={{
-            color: '#666',
-            fontSize: '14px',
-            textAlign: 'center',
-            marginBottom: '20px'
-          }}>
-            You'll be redirected to {searchParams.get('redirect')} after signing in
+
+        {/* Title */}
+        <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-200 mb-6">
+          Sign In
+        </h2>
+
+        {/* Redirect note */}
+        {searchParams.get("redirect") && (
+          <p className="text-sm text-gray-200 text-center mb-4">
+            You&apos;ll be redirected to{" "}
+            <span className="font-medium text-gray-400">
+              {searchParams.get("redirect")}
+            </span>{" "}
+            after signing in
           </p>
         )}
-        <form className={styles.form} onSubmit={handleSubmit}>
-          <label className={styles.label}>Email</label>
-          <div className={styles.passwordWrapper}>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label className="block text-sm font-medium text-gray-200 mb-1">
+              Email
+            </label>
             <input
-              className={styles.input}
               type="email"
               name="email"
               placeholder="Enter your email"
               required
+              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             />
           </div>
-          <label className={styles.label}>Password</label>
-          <div className={styles.passwordWrapper}>
-            <input
-              className={`${styles.input} ${showPassword ? styles.inputShow : ""}`}
-              type={showPassword ? "text" : "password"}
-              name="password"
-              placeholder="Enter your password"
-              required
-            />
-            <span
-              className={styles.eyeIcon}
-              onClick={() => setShowPassword((prev) => !prev)}
-              tabIndex={0}
-              role="button"
-              aria-label="Toggle password visibility"
+
+          <div>
+            <label className="block text-sm font-medium text-gray-200 mb-1">
+              Password
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                placeholder="Enter your password"
+                required
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none pr-10"
+              />
+              <span
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-3 top-2.5 text-gray-500 cursor-pointer"
+                role="button"
+                aria-label="Toggle password visibility"
+              >
+                {showPassword ? <FiEyeOff /> : <FiEye />}
+              </span>
+            </div>
+          </div>
+
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+
+          <div className="flex justify-between items-center text-sm">
+            <a
+              href="/auth/forgot-password"
+              className="text-indigo-600 hover:underline"
             >
-              {showPassword ? <FiEyeOff /> : <FiEye />}
-            </span>
+              Forgot password?
+            </a>
           </div>
-          {error && <div style={{ color: "red", marginBottom: 8 }}>{error}</div>}
-          <a href="/auth/forgot-password" className={styles.forgotLink}>Forgot your password?</a>
+
           <button
             type="submit"
-            className={styles.signinBtn}
             disabled={loading}
+            className="w-full bg-indigo-600 text-white py-2.5 rounded-lg font-medium hover:bg-indigo-700 transition disabled:opacity-50"
           >
-            {loading ? 'Signing in...' : 'Sign in'}
+            {loading ? "Signing in..." : "Sign in"}
           </button>
-          <a href="/auth/register" className={styles.forgotLink} style={{ textAlign: 'center' }}>Create a new account</a>
+
+          <p className="text-center text-sm text-gray-400">
+            Don&apos;t have an account?{" "}
+            <a
+              href="/auth/register"
+              className="text-indigo-600 font-medium hover:underline"
+            >
+              Create one
+            </a>
+          </p>
         </form>
       </div>
     </div>
   );
 }
-

@@ -50,7 +50,7 @@ export default function BookShowtimePage() {
       // Ghế couple (mảng 2 ghế)
       const seatIds = seatOrSeats.map(s => s.seat_id);
       const allSelected = seatIds.every(id => selectedSeats.some(s => s.seat_id === id));
-  
+
       if (allSelected) {
         // Bỏ chọn cả 2 ghế
         setSelectedSeats(prev => prev.filter(s => !seatIds.includes(s.seat_id)));
@@ -69,7 +69,7 @@ export default function BookShowtimePage() {
       }
     }
   };
-  
+
 
   const handleBooking = async () => {
     if (selectedSeats.length === 0) {
@@ -129,51 +129,117 @@ export default function BookShowtimePage() {
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-[#1a2332] pt-24 pb-12">
-        <div className="w-full max-w-5xl mx-auto bg-base-200 px-4 md:px-6 py-6 rounded mb-8">
-          <h2 className="text-2xl font-bold mb-6 text-center">Showtime Details</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[
-              { label: 'Movie', value: showtime.movie_id?.title },
-              { label: 'Theater', value: showtime.theater_id?.name },
-              { label: 'Time', value: new Date(showtime.time).toLocaleString() },
-              { label: 'Address', value: showtime.theater_id?.address },
-              { label: 'Room', value: showtime.room },
-              { label: 'Screen Type', value: showtime.type },
-            ].map((item, idx) => (
-              <div key={idx}>
-                <label className="block font-semibold text-sm mb-1 text-white">{item.label}:</label>
-                <div className="w-full rounded border border-gray-500 px-3 py-2 text-white bg-gray-800 text-sm break-words whitespace-pre-wrap min-h-[40px]">
-                  {item.value || 'N/A'}
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-black pt-20 pb-10 text-white">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8 space-y-8">
+
+          {/* Movie Info Card */}
+          <div className="bg-gray-800/70 backdrop-blur-md rounded-2xl shadow-lg p-4 md:p-6 flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-6">
+
+            {/* Poster */}
+            <img
+              src={showtime.movie_id?.poster || "/poster-fallback.jpg"}
+              alt="poster"
+              className="w-28 h-40 md:w-48 md:h-72 object-cover rounded-lg shadow-md mx-auto md:mx-0"
+            />
+
+            {/* Info */}
+            <div className="flex-1 w-full md:ml-6">
+              <h2 className="text-xl md:text-3xl font-bold mb-4 text-center md:text-left">
+                {showtime.movie_id?.title}
+              </h2>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 text-sm md:text-base">
+                {/* Date */}
+                <div className="flex items-start gap-2">
+                  <span className="text-red-400">📅</span>
+                  <div>
+                    <p className="font-semibold">Date</p>
+                    <p className="text-gray-300">{new Date(showtime.time).toLocaleDateString()}</p>
+                  </div>
+                </div>
+
+                {/* Time */}
+                <div className="flex items-start gap-2">
+                  <span className="text-red-400">⏰</span>
+                  <div>
+                    <p className="font-semibold">Time</p>
+                    <p className="text-gray-300">{new Date(showtime.time).toLocaleTimeString()}</p>
+                  </div>
+                </div>
+
+                {/* Theater */}
+                <div className="flex items-start gap-2">
+                  <span className="text-red-400">🏢</span>
+                  <div>
+                    <p className="font-semibold">Theater</p>
+                    <p className="text-gray-300">{showtime.theater_id?.name}</p>
+                  </div>
+                </div>
+
+                {/* Room */}
+                <div className="flex items-start gap-2">
+                  <span className="text-red-400">🪑</span>
+                  <div>
+                    <p className="font-semibold">Room</p>
+                    <p className="text-gray-300">{showtime.room}</p>
+                  </div>
+                </div>
+
+                {/* Screen */}
+                <div className="flex items-start gap-2">
+                  <span className="text-red-400">🎞️</span>
+                  <div>
+                    <p className="font-semibold">Screen</p>
+                    <p className="text-gray-300">{showtime.type}</p>
+                  </div>
+                </div>
+
+                {/* Address */}
+                <div className="flex items-start gap-2">
+                  <span className="text-red-400">📍</span>
+                  <div>
+                    <p className="font-semibold">Address</p>
+                    <p className="text-gray-300">{showtime.theater_id?.address}</p>
+                  </div>
                 </div>
               </div>
-            ))}
+            </div>
           </div>
-        </div>
 
-        <div className="w-full max-w-5xl mx-auto bg-base-200 px-4 md:px-6 py-6 rounded mb-8">
 
-          <div className="flex-1 overflow-auto p-4">
-            <h2 className="text-xl font-bold mb-4 text-center">Select your seat</h2>
-            <SeatMap
-              seats={showtime?.seats_layout || []}
-              selected={selectedSeats.map(s => s.seat_id)}
-              onSeatClick={handleSeatSelect}
-              readonly={false}
-              showLegend={true}
-              seatConfig={seatConfig}
-            />
+          {/* SeatMap Section */}
+          <div className="bg-gray-800/70 rounded-2xl shadow-lg p-6 text-center">
+            <h2 className="text-xl md:text-2xl font-bold mb-6 flex justify-center items-center gap-2">
+              Select your seat
+            </h2>
+
+            <div className="overflow-x-auto flex justify-center">
+              <SeatMap
+                seats={showtime?.seats_layout || []}
+                selected={selectedSeats.map(s => s.seat_id)}
+                onSeatClick={handleSeatSelect}
+                readonly={false}
+                showLegend={true}
+                seatConfig={seatConfig}
+              />
+            </div>
+
             <button
               onClick={handleBooking}
               disabled={selectedSeats.length === 0 || loading || isHolding}
-              className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:bg-gray-500"
+              className="w-full md:w-1/2 mx-auto mt-6 py-3 text-lg font-bold rounded-xl 
+                   bg-gradient-to-r from-pink-500 to-red-500 
+                   hover:opacity-90 disabled:opacity-50 
+                   transition-all duration-300"
             >
-              {isHolding ? 'Holding seat...' : 'Booking now'}
+              {isHolding ? "⏳ Holding seat..." : "🎬 Book Now"}
             </button>
-            {error && <p className="text-red-500 mt-4 text-center">{error}</p>}
+
+            {error && <p className="text-red-400 mt-4">{error}</p>}
           </div>
         </div>
       </div>
+
     </>
   );
 } 

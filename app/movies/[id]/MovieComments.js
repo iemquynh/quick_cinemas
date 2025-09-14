@@ -136,13 +136,13 @@ export default function MovieComments({ movieId, readOnly = false }) {
   }
 
   return (
-    <div className="relative z-10 mt-24 w-full max-w-3xl mx-auto px-4 ">
+    <div className="relative z-10 w-full mt-6 max-w-3xl mx-auto px-4 ">
       <h3 className="text-lg font-bold mb-2">Comment & Rating</h3>
       {/* Hiển thị rating trung bình */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
         {ratingAverage ? (
           <>
-            <span className="text-yellow-400 text-xl font-bold">
+            <span className="text-yellow-400 text-lg font-bold" style={{ fontSize: '14px' }} >
               <StarRating value={ratingAverage} readOnly />
             </span>
             <span className="text-yellow-400 font-bold text-lg">

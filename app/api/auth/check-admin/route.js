@@ -52,7 +52,7 @@ export async function GET(request) {
     });
     
   } catch (error) {
-    console.error('Error checking admin status:', error);
+    // console.error('Error checking admin status:', error);
     
     if (error.name === 'JsonWebTokenError') {
       return NextResponse.json(

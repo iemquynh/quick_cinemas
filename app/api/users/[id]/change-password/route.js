@@ -25,7 +25,7 @@ export async function POST(request, { params }) {
     await user.save();
     return NextResponse.json({ success: true, message: 'Password changed successfully' });
   } catch (error) {
-    console.error('Change password error:', error);
+    // console.error('Change password error:', error);
     return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });
   }
 } 

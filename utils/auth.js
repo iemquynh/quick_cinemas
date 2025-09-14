@@ -53,7 +53,7 @@ export async function getAuth(req) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     return decoded; // Chứa userId, role, v.v.
   } catch (error) {
-    console.error("Authentication error:", error.message);
+    // console.error("Authentication error:", error.message);
     return null;
   }
 } 
