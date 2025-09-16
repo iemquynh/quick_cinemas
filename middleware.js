@@ -7,5 +7,5 @@ export function middleware(request) {
 }
 
 export const config = {
-  matcher: ['/'],
+  matcher: ['/((?!manifest.json|web-app-manifest-.*\\.png).*)'],
 }; 
