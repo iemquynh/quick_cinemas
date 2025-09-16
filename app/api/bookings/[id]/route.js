@@ -70,7 +70,18 @@ export async function PATCH(req, { params }) {
     await booking.save();
 
     // Cập nhật seats_layout của showtime
-    const showtime = await Showtime.findById(booking.showtime_id);
+    // const showtime = await Showtime.findById(booking.showtime_id);
+
+    let showtime;
+    if (mongoose.Types.ObjectId.isValid(booking.showtime_id)) {
+      // Nếu booking.showtime_id là ObjectId hợp lệ
+      showtime = await Showtime.findById(booking.showtime_id);
+    } else {
+      // Nếu booking.showtime_id là string
+      showtime = await Showtime.findOne({ _id: booking.showtime_id });
+    }
+    
+
     if (showtime) {
       for (const seat of booking.seats) {
         const seatObj = showtime.seats_layout.find(s => s.seat_id === seat.seat_id);

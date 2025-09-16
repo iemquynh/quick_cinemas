@@ -71,19 +71,19 @@ export default function Header() {
   }, [user, user?._id]);
 
   // Lắng nghe realtime booking_update (Socket.IO)
-  useEffect(() => {
-    if (!token || !user || user.role !== 'user') return;
-    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3000', {
-      auth: { token }
-    });
-    socket.on('booking_update', (notification) => {
-      setNotifications(prev => [notification, ...prev]);
-      if (typeof window !== 'undefined' && window.showToast) {
-        window.showToast(notification.message, 'info');
-      }
-    });
-    return () => { socket.disconnect(); };
-  }, [token, user]);
+  // useEffect(() => {
+  //   if (!token || !user || user.role !== 'user') return;
+  //   const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3000', {
+  //     auth: { token }
+  //   });
+  //   socket.on('booking_update', (notification) => {
+  //     setNotifications(prev => [notification, ...prev]);
+  //     if (typeof window !== 'undefined' && window.showToast) {
+  //       window.showToast(notification.message, 'info');
+  //     }
+  //   });
+  //   return () => { socket.disconnect(); };
+  // }, [token, user]);
 
   // Số thông báo chưa đọc
   const unreadCount = notifications.filter(n => !n.read).length;

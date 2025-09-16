@@ -33,21 +33,21 @@ export default function NotificationBell({ user, token, onMessageNotificationCli
   }, [user?._id]);
 
   // Socket realtime
-  useEffect(() => {
-    if (!token || !user || user.role !== 'user') return;
-    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3000', {
-      auth: { token },
-    });
+  // useEffect(() => {
+  //   if (!token || !user || user.role !== 'user') return;
+  //   const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3000', {
+  //     auth: { token },
+  //   });
 
-    socket.on('booking_update', (notification) => {
-      setNotifications(prev => [notification, ...prev]);
-      if (typeof window !== 'undefined' && window.showToast) {
-        window.showToast(notification.message, 'info');
-      }
-    });
+  //   socket.on('booking_update', (notification) => {
+  //     setNotifications(prev => [notification, ...prev]);
+  //     if (typeof window !== 'undefined' && window.showToast) {
+  //       window.showToast(notification.message, 'info');
+  //     }
+  //   });
 
-    return () => socket.disconnect();
-  }, [token, user]);
+  //   return () => socket.disconnect();
+  // }, [token, user]);
 
   const deleteNotification = async (id) => {
     await fetch(`/api/notifications/${id}`, { method: 'DELETE' });
@@ -153,16 +153,27 @@ export default function NotificationBell({ user, token, onMessageNotificationCli
                             }
                             break;
                           case 'booking_pending':
-                            window.location.href = `/my-tickets?bookingId=${bookingId}&tab=pending`;
+                            window.location.href = user?.role === "theater_admin"
+                              ? `/admin/bookings?bookingId=${bookingId}&tab=pending`
+                              : `/my-tickets?bookingId=${bookingId}&tab=pending`;
                             break;
+
                           case 'booking_confirmed':
-                            window.location.href = `/my-tickets?bookingId=${bookingId}&tab=using`;
+                            window.location.href = user?.role === "theater_admin"
+                              ? `/admin/bookings?bookingId=${bookingId}&tab=using`
+                              : `/my-tickets?bookingId=${bookingId}&tab=using`;
                             break;
+
                           case 'booking_cancelled':
-                            window.location.href = `/my-tickets?bookingId=${bookingId}&tab=cancel`;
+                            window.location.href = user?.role === "theater_admin"
+                              ? `/admin/bookings?bookingId=${bookingId}&tab=cancel`
+                              : `/my-tickets?bookingId=${bookingId}&tab=cancel`;
                             break;
+
                           case 'booking_expiring':
-                            window.location.href = `/my-tickets?bookingId=${bookingId}&tab=upcoming`;
+                            window.location.href = user?.role === "theater_admin"
+                              ? `/admin/bookings?bookingId=${bookingId}&tab=upcoming`
+                              : `/my-tickets?bookingId=${bookingId}&tab=upcoming`;
                             break;
                           default:
                             console.warn('Không xác định được loại thông báo:', notification.type);

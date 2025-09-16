@@ -221,18 +221,108 @@ export default function PaymentPage() {
     }));
   };
 
+  // async function uploadPaymentProof(file) {
+  //   const formData = new FormData();
+  //   formData.append("file", file);
+  //   const res = await fetch("/api/upload", { method: "POST", body: formData });
+  //   if (!res.ok) throw new Error("Upload failed");
+  //   const data = await res.json();
+  //   return data.url;
+  // }
+
   async function uploadPaymentProof(file) {
     const formData = new FormData();
     formData.append("file", file);
+
     const res = await fetch("/api/upload", { method: "POST", body: formData });
     if (!res.ok) throw new Error("Upload failed");
-    const data = await res.json();
-    return data.url;
+
+    const { url } = await res.json();
+
+    // cập nhật bookingInfo trong localStorage
+    const info = JSON.parse(localStorage.getItem("bookingInfo")) || {};
+    info.payment_proof_url = url;
+    localStorage.setItem("bookingInfo", JSON.stringify(info));
+
+    return url;
   }
+
+
+  // async function handlePayment() {
+  //   if (!paymentProof) {
+  //     Swal.fire({ icon: "error", title: "Missing payment proof", text: "Please upload a payment screenshot!" });
+  //     return;
+  //   }
+
+  //   try {
+  //     const confirm = await Swal.fire({
+  //       title: "Confirm Payment",
+  //       text: `Are you sure to pay ${finalPrice.toLocaleString()}đ?`,
+  //       icon: "question",
+  //       showCancelButton: true,
+  //       confirmButtonText: "Yes, pay now",
+  //       cancelButtonText: "Cancel",
+  //     });
+  //     if (!confirm.isConfirmed) return;
+
+  //     const proofUrl = await uploadPaymentProof(paymentProof);
+
+  //     const seatsForBooking = (bookingInfo?.selectedSeats || []).map((s) => ({ seat_id: s.seat_id, type: s.type }));
+
+  //     const token = localStorage.getItem("auth-token");
+
+  //     const res = await fetch("/api/bookings", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         ...(token ? { Authorization: "Bearer " + token } : {}),
+  //       },
+  //       body: JSON.stringify({
+  //         showtime_id: bookingInfo?.showtimeId || showtimeId,
+  //         seats: seatsForBooking,
+  //         combos: bookingInfo?.comboCounts || {},
+  //         payment_proof_url: proofUrl,
+  //         status: "pending",
+  //         final_price: finalPrice,
+  //         promotion_id: selectedPromotion?._id || null,
+  //       }),
+  //     });
+
+  //     let data;
+  //     try {
+  //       data = await res.json();
+  //     } catch (e) {
+  //       data = { error: "Failed to parse JSON response from API" };
+  //     }
+
+  //     if (!res.ok) {
+  //       console.error("Booking API error:", data);
+  //       throw new Error(data.error || "Booking failed");
+  //     }
+
+  //     await Swal.fire({
+  //       icon: "success",
+  //       title: "Payment successful",
+  //       text: "Your booking is pending confirmation.",
+  //       timer: 2000,
+  //       showConfirmButton: false,
+  //       toast: true,
+  //       position: "top-end",
+  //     });
+
+  //     router.push(`/book/${showtimeId}/pending?bookingId=${data.bookingId}`);
+  //   } catch (err) {
+  //     Swal.fire({ icon: "error", title: "Payment failed", text: err.message || "An error occurred during payment." });
+  //   }
+  // }
 
   async function handlePayment() {
     if (!paymentProof) {
-      Swal.fire({ icon: "error", title: "Missing payment proof", text: "Please upload a payment screenshot!" });
+      Swal.fire({
+        icon: "error",
+        title: "Missing payment proof",
+        text: "Please upload a payment screenshot!",
+      });
       return;
     }
 
@@ -247,10 +337,18 @@ export default function PaymentPage() {
       });
       if (!confirm.isConfirmed) return;
 
+      // 1. Upload ảnh lên Cloudinary
       const proofUrl = await uploadPaymentProof(paymentProof);
+      console.log("BookingInfo:", bookingInfo);
+      console.log("Sending showtime_id:", bookingInfo?.showtimeId || showtimeId);
 
-      const seatsForBooking = (bookingInfo?.selectedSeats || []).map((s) => ({ seat_id: s.seat_id, type: s.type }));
 
+      // 2. Lấy bookingInfo từ localStorage và gán payment_proof_url
+      let info = JSON.parse(localStorage.getItem("bookingInfo")) || {};
+      info.payment_proof_url = proofUrl;
+      localStorage.setItem("bookingInfo", JSON.stringify(info));
+
+      // 3. Gửi booking
       const token = localStorage.getItem("auth-token");
 
       const res = await fetch("/api/bookings", {
@@ -260,8 +358,8 @@ export default function PaymentPage() {
           ...(token ? { Authorization: "Bearer " + token } : {}),
         },
         body: JSON.stringify({
-          showtime_id: bookingInfo?.showtimeId || showtimeId,
-          seats: seatsForBooking,
+          showtime_id: bookingInfo?.showtimeId || showtimeId, // ✅ đổi key cho đúng BE
+          seats: bookingInfo?.selectedSeats?.map(s => ({ seat_id: s.seat_id, type: s.type })) || [],
           combos: bookingInfo?.comboCounts || {},
           payment_proof_url: proofUrl,
           status: "pending",
@@ -269,18 +367,10 @@ export default function PaymentPage() {
           promotion_id: selectedPromotion?._id || null,
         }),
       });
+      
 
-      let data;
-      try {
-        data = await res.json();
-      } catch (e) {
-        data = { error: "Failed to parse JSON response from API" };
-      }
-
-      if (!res.ok) {
-        console.error("Booking API error:", data);
-        throw new Error(data.error || "Booking failed");
-      }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Booking failed");
 
       await Swal.fire({
         icon: "success",
@@ -292,11 +382,17 @@ export default function PaymentPage() {
         position: "top-end",
       });
 
-      router.push(`/book/${showtimeId}/pending?bookingId=${data.bookingId}`);
+      router.push(`/book/${info.showtimeId}/pending?bookingId=${data.bookingId}`);
     } catch (err) {
-      Swal.fire({ icon: "error", title: "Payment failed", text: err.message || "An error occurred during payment." });
+      Swal.fire({
+        icon: "error",
+        title: "Payment failed",
+        text: err.message || "An error occurred during payment.",
+      });
     }
   }
+
+
 
   const handlePaymentWithTimer = async () => {
     // reset đếm ngược 2 phút kể từ lúc bấm thanh toán
